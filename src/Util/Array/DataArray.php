@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Tools;
+namespace zxf\Util\Array;
 
 use ArrayAccess;
 use ArrayIterator;
@@ -13,7 +13,7 @@ use RuntimeException;
 use InvalidArgumentException;
 
 /**
- * 增强的数组对象工具类
+ * 数组对象工具类
  * 提供数组的面向对象操作方式，支持点分隔符访问、通配符查找、链式操作等高级功能
  *
  * @example
@@ -21,6 +21,8 @@ use InvalidArgumentException;
  * echo $data->get('user.name'); // John
  * echo $data['user.name']; // John (通过数组访问)
  * echo $data->get('list.*.name'); // 通配符查找
+ *
+ * @see https://weisifang.com/docs/doc/9_312 DataArray使用文档
  */
 class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerializable
 {
@@ -183,11 +185,11 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
     }
 
     /*****************************************************************
-     * 魔术方法 - 修复对象属性访问问题
+     * 魔术方法
      *****************************************************************/
 
     /**
-     * 魔术方法获取属性 - 修复对象属性访问
+     * 魔术方法获取属性
      *
      * @param string $name 属性名
      * @return mixed 属性值，如果是数组则返回新的DataArray实例
@@ -205,7 +207,7 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
     }
 
     /**
-     * 魔术方法设置属性 - 修复对象属性设置
+     * 魔术方法设置属性
      *
      * @param string $name 属性名
      * @param mixed $value 属性值
@@ -392,7 +394,7 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
     }
 
     /**
-     * 递归转换的辅助方法 - 彻底修复返回类型问题
+     * 递归转换的辅助方法
      *
      * @param mixed $data 要转换的数据
      * @return array 转换后的数组
@@ -807,7 +809,7 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
 
     /**
      * 在数组中搜索给定的值，并返回第一个匹配的键
-     * 修复：确保返回正确的键名或false，支持点分隔符路径搜索
+     *    确保返回正确的键名或false，支持点分隔符路径搜索
      *
      * @param mixed $value 要搜索的值
      * @param bool $strict 是否使用严格比较
@@ -1163,7 +1165,7 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
     }
 
     /**
-     * 数组去重（返回新实例）- 修复类型错误
+     * 数组去重（返回新实例）
      *
      * @param int $flags 比较标志
      * @return static 新的DataArray实例
@@ -1182,7 +1184,7 @@ class DataArray implements ArrayAccess, Countable, IteratorAggregate, JsonSerial
     }
 
     /**
-     * 数组键值交换（返回新实例）- 修复类型错误
+     * 数组键值交换（返回新实例）
      *
      * @return static 新的DataArray实例
      */
