@@ -1,40 +1,57 @@
 <?php
 
 /**
- * 加密类全面测试套件
- * 覆盖AES、ECC、RSA所有功能测试
+ * 加密解密类全面测试套件
+ * 测试AES、RSA、ECC三个加密类的所有功能
+ * 确保每个功能都得到充分测试，异常不会影响后续测试
+ *
+ * @package CryptoTest
+ * @author Test Team
+ * @version 1.0.0
+ * @created 2024-01-15
  */
 
+// 引入加密类
 require_once 'AES.php';
-require_once 'ECC.php';
 require_once 'RSA.php';
+require_once 'ECC.php';
 
+/**
+ * 加密类全面测试器
+ */
 class CryptoTestSuite
 {
     private string $testDataDir;
-    private array $testResults = [];
+    private array $testResults;
+    private int $totalTests;
+    private int $passedTests;
 
+    /**
+     * 构造函数
+     */
     public function __construct()
     {
         $this->testDataDir = __DIR__ . '/test_data';
-        $this->setupTestEnvironment();
+        $this->testResults = [];
+        $this->totalTests = 0;
+        $this->passedTests = 0;
+
+        // 创建测试目录
+        $this->createTestDirectory();
     }
 
     /**
-     * 设置测试环境
+     * 创建测试目录
      */
-    private function setupTestEnvironment(): void
+    private function createTestDirectory(): void
     {
-        echo "=== 设置测试环境 ===\n<br/>";
-
         if (!is_dir($this->testDataDir)) {
             mkdir($this->testDataDir, 0755, true);
-            echo "创建测试目录: {$this->testDataDir}\n<br/>";
+            echo "创建测试目录: {$this->testDataDir}\n<br />";
         }
 
         // 创建测试文件
         $this->createTestFiles();
-        echo "测试环境设置完成\n<br/>\n<br/>";
     }
 
     /**
@@ -43,21 +60,24 @@ class CryptoTestSuite
     private function createTestFiles(): void
     {
         $testFiles = [
-            'small.txt' => "这是一个小型测试文件内容。\n<br/>Hello World!",
-            'medium.txt' => str_repeat("这是中等大小测试文件内容。", 100),
-            'large.txt' => str_repeat("这是大型测试文件内容，用于测试大文件处理能力。", 1000),
-            'binary.bin' => $this->generateBinaryData(1024)
+            'small.txt' => '这是一个小测试文件，用于测试加密功能。内容不长，但足够测试。',
+            'medium.txt' => str_repeat('这是中等大小的测试文件内容。', 100),
+            'large.txt' => str_repeat('这是大文件测试内容，用于测试大文件加密性能。', 1000),
+            'binary.bin' => $this->generateBinaryData(1024), // 1KB二进制数据
+            'special_chars.txt' => "特殊字符测试：\n<br />\t中文内容 € § ® © 表情符号 😀 🌟 🚀\n<br />第二行内容"
         ];
 
         foreach ($testFiles as $filename => $content) {
             $filepath = $this->testDataDir . '/' . $filename;
-            file_put_contents($filepath, $content);
-            echo "创建测试文件: {$filename} (" . strlen($content) . " 字节)\n<br/>";
+            if (!file_exists($filepath)) {
+                file_put_contents($filepath, $content);
+                echo "创建测试文件: {$filename}\n<br />";
+            }
         }
     }
 
     /**
-     * 生成二进制数据
+     * 生成二进制测试数据
      */
     private function generateBinaryData(int $size): string
     {
@@ -73,64 +93,212 @@ class CryptoTestSuite
      */
     public function runAllTests(): void
     {
-        echo "=== 开始全面加密测试 ===\n<br/>\n<br/>";
+        echo "========================================\n<br />";
+        echo "开始运行加密类全面测试\n<br />";
+        echo "========================================\n<br />\n<br />";
 
-        $this->testAESCrypto();
-        $this->testECCCrypto();
-        $this->testRSACrypto();
+        $this->runAESTests();
+        $this->runRSATests();
+        $this->runECCTests();
 
-        $this->printTestSummary();
+        $this->generateTestReport();
     }
 
     /**
-     * AES加密测试
+     * 运行AES测试
      */
-    private function testAESCrypto(): void
+    private function runAESTests(): void
     {
-        echo "=== AES加密测试 ===\n<br/>";
+        echo "AES加密类测试\n<br />";
+        echo "==============\n<br />\n<br />";
 
-        // 测试1: 基本加密解密
-        $this->runTest('AES-基本加密解密', function() {
+        $this->testAESBasicFunctions();
+        $this->testAESEncryptionModes();
+        $this->testAESFileOperations();
+        $this->testAESAdvancedFeatures();
+        $this->testAESErrorHandling();
+
+        echo "\n<br />";
+    }
+
+    /**
+     * 运行RSA测试
+     */
+    private function runRSATests(): void
+    {
+        echo "RSA加密类测试\n<br />";
+        echo "==============\n<br />\n<br />";
+
+        $this->testRSABasicFunctions();
+        $this->testRSAEncryptionDecryption();
+        $this->testRSASigningVerification();
+        $this->testRSAFileOperations();
+        $this->testRSAAdvancedFeatures();
+        $this->testRSAErrorHandling();
+
+        echo "\n<br />";
+    }
+
+    /**
+     * 运行ECC测试
+     */
+    private function runECCTests(): void
+    {
+        echo "ECC加密类测试\n<br />";
+        echo "==============\n<br />\n<br />";
+
+        $this->ECCBasicFunctions();
+        $this->ECCSigningVerification();
+        $this->ECCKeyExchange();
+        $this->ECCFileOperations();
+        $this->ECCAdvancedFeatures();
+        $this->ECCErrorHandling();
+
+        echo "\n<br />";
+    }
+
+    /**
+     * AES基础功能测试
+     */
+    private function testAESBasicFunctions(): void
+    {
+        $this->testCase("AES-01", "AES基础加密解密", function() {
             $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
+            $aes = new AESCrypto($key, 'aes-256-cbc', null, false);
 
-            $originalData = "Hello, AES Encryption! 这是测试数据。";
-            $encrypted = $aes->encrypt($originalData);
+            $testData = "Hello, AES Encryption World! 测试中文内容 🚀";
+            $encrypted = $aes->encrypt($testData);
             $decrypted = $aes->decrypt($encrypted);
 
-            echo "原始数据: {$originalData}\n<br/>";
-            echo "加密数据: " . substr($encrypted, 0, 50) . "...\n<br/>";
-            echo "解密数据: {$decrypted}\n<br/>";
-            echo "测试结果: " . ($originalData === $decrypted ? "成功" : "失败") . "\n<br/>";
-
-            return $originalData === $decrypted;
+            return $decrypted === $testData;
         });
 
-        // 测试2: 不同加密模式
-        $this->runTest('AES-不同加密模式', function() {
-            $modes = ['aes-256-cbc', 'aes-256-ecb', 'aes-256-cfb'];
-            $testData = "测试不同加密模式的数据";
+        $this->testCase("AES-02", "AES不同密钥长度", function() {
+            $results = [];
 
-            foreach ($modes as $mode) {
-                $key = AESCrypto::generateKey($mode);
-                $aes = new AESCrypto($key, $mode, null, false);
+            // 测试128位密钥
+            $key128 = AESCrypto::generateKey('aes-128-cbc');
+            $aes128 = new AESCrypto($key128, 'aes-128-cbc');
+            $data = "128位密钥测试";
+            $encrypted = $aes128->encrypt($data);
+            $results[] = $aes128->decrypt($encrypted) === $data;
 
-                $encrypted = $aes->encrypt($testData);
-                $decrypted = $aes->decrypt($encrypted);
+            // 测试192位密钥
+            $key192 = AESCrypto::generateKey('aes-192-cbc');
+            $aes192 = new AESCrypto($key192, 'aes-192-cbc');
+            $encrypted = $aes192->encrypt($data);
+            $results[] = $aes192->decrypt($encrypted) === $data;
 
-                if ($testData !== $decrypted) {
-                    echo "模式 {$mode} 测试失败\n<br/>";
-                    return false;
-                }
-                echo "模式 {$mode} 测试成功\n<br/>";
-            }
-            return true;
+            // 测试256位密钥
+            $key256 = AESCrypto::generateKey('aes-256-cbc');
+            $aes256 = new AESCrypto($key256, 'aes-256-cbc');
+            $encrypted = $aes256->encrypt($data);
+            $results[] = $aes256->decrypt($encrypted) === $data;
+
+            return !in_array(false, $results, true);
         });
 
-        // 测试3: 文件加密解密
-        $this->runTest('AES-文件加密解密', function() {
+        $this->testCase("AES-03", "AES IV重用测试", function() {
             $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
+            $iv = random_bytes(16);
+
+            $aes1 = new AESCrypto($key, 'aes-256-cbc', $iv);
+            $aes2 = new AESCrypto($key, 'aes-256-cbc', $iv);
+
+            $data = "相同IV测试数据";
+            $encrypted1 = $aes1->encrypt($data);
+            $encrypted2 = $aes2->encrypt($data);
+
+            // 相同IV和密钥应该产生相同的结果
+            return $encrypted1 === $encrypted2;
+        });
+
+        $this->testCase("AES-04", "AES密码派生密钥", function() {
+            $password = "mySecurePassword123";
+            $salt = "randomSaltValue";
+
+            $key = AESCrypto::generateKeyFromPassword($password, $salt, 'aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $data = "密码派生密钥测试";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            return $decrypted === $data;
+        });
+    }
+
+    /**
+     * AES加密模式测试
+     */
+    private function testAESEncryptionModes(): void
+    {
+        $this->testCase("AES-05", "AES CBC模式", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $data = "CBC模式测试数据";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            return $decrypted === $data && $aes->requiresIV();
+        });
+
+        $this->testCase("AES-06", "AES ECB模式", function() {
+            $key = AESCrypto::generateKey('aes-256-ecb');
+            $aes = new AESCrypto($key, 'aes-256-ecb');
+
+            $data = "ECB模式测试数据";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            return $decrypted === $data && !$aes->requiresIV();
+        });
+
+        $this->testCase("AES-07", "AES GCM模式", function() {
+            $key = AESCrypto::generateKey('aes-256-gcm');
+            $aes = new AESCrypto($key, 'aes-256-gcm');
+
+            $data = "GCM认证加密模式测试";
+            $additionalData = "附加认证数据";
+
+            $encrypted = $aes->encrypt($data, OPENSSL_RAW_DATA, $additionalData);
+            $decrypted = $aes->decrypt($encrypted, OPENSSL_RAW_DATA, $additionalData);
+
+            return $decrypted === $data && $aes->isAuthenticatedMode();
+        });
+
+        $this->testCase("AES-08", "AES CTR模式", function() {
+            $key = AESCrypto::generateKey('aes-256-ctr');
+            $aes = new AESCrypto($key, 'aes-256-ctr');
+
+            $data = "CTR流加密模式测试";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            return $decrypted === $data;
+        });
+
+        $this->testCase("AES-09", "AES CFB模式", function() {
+            $key = AESCrypto::generateKey('aes-256-cfb');
+            $aes = new AESCrypto($key, 'aes-256-cfb');
+
+            $data = "CFB模式测试数据";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            return $decrypted === $data;
+        });
+    }
+
+    /**
+     * AES文件操作测试
+     */
+    private function testAESFileOperations(): void
+    {
+        $this->testCase("AES-10", "AES小文件加密解密", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
 
             $inputFile = $this->testDataDir . '/small.txt';
             $encryptedFile = $this->testDataDir . '/small_encrypted.aes';
@@ -138,335 +306,921 @@ class CryptoTestSuite
 
             // 加密文件
             $success = $aes->encryptFile($inputFile, $encryptedFile);
-            if (!$success) {
-                echo "文件加密失败\n<br/>";
-                return false;
-            }
-            echo "文件加密成功: " . filesize($encryptedFile) . " 字节\n<br/>";
+            if (!$success) return false;
 
             // 解密文件
             $success = $aes->decryptFile($encryptedFile, $decryptedFile);
-            if (!$success) {
-                echo "文件解密失败\n<br/>";
-                return false;
-            }
-            echo "文件解密成功: " . filesize($decryptedFile) . " 字节\n<br/>";
+            if (!$success) return false;
 
             // 验证内容
             $original = file_get_contents($inputFile);
             $decrypted = file_get_contents($decryptedFile);
 
-            $result = $original === $decrypted;
-            echo "文件内容验证: " . ($result ? "成功" : "失败") . "\n<br/>";
-
-            // 清理
+            // 清理测试文件
             unlink($encryptedFile);
             unlink($decryptedFile);
 
-            return $result;
+            return $original === $decrypted;
         });
 
-        // 测试4: 字符串到文件加密
-        $this->runTest('AES-字符串到文件加密', function() {
+        $this->testCase("AES-11", "AES大文件加密解密", function() {
             $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
+            $aes = new AESCrypto($key, 'aes-256-cbc');
 
-            $testData = "这是要加密到文件的字符串数据";
+            $inputFile = $this->testDataDir . '/large.txt';
+            $encryptedFile = $this->testDataDir . '/large_encrypted.aes';
+            $decryptedFile = $this->testDataDir . '/large_decrypted.txt';
+
+            // 加密文件
+            $success = $aes->encryptFile($inputFile, $encryptedFile);
+            if (!$success) return false;
+
+            // 解密文件
+            $success = $aes->decryptFile($encryptedFile, $decryptedFile);
+            if (!$success) return false;
+
+            // 验证内容
+            $original = file_get_contents($inputFile);
+            $decrypted = file_get_contents($decryptedFile);
+
+            // 清理测试文件
+            unlink($encryptedFile);
+            unlink($decryptedFile);
+
+            return $original === $decrypted;
+        });
+
+        $this->testCase("AES-12", "AES文件压缩加密", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $inputFile = $this->testDataDir . '/medium.txt';
+            $encryptedFile = $this->testDataDir . '/medium_compressed_encrypted.aes';
+            $decryptedFile = $this->testDataDir . '/medium_decompressed.txt';
+
+            // 启用压缩加密文件
+            $success = $aes->encryptFile($inputFile, $encryptedFile, 65536, true, true);
+            if (!$success) return false;
+
+            // 解密文件
+            $success = $aes->decryptFile($encryptedFile, $decryptedFile);
+            if (!$success) return false;
+
+            // 验证内容
+            $original = file_get_contents($inputFile);
+            $decrypted = file_get_contents($decryptedFile);
+
+            // 清理测试文件
+            unlink($encryptedFile);
+            unlink($decryptedFile);
+
+            return $original === $decrypted;
+        });
+
+        $this->testCase("AES-13", "AES字符串到文件加密", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $testData = "这是要加密的字符串数据，包含中文和特殊字符：🚀🌟✨";
             $outputFile = $this->testDataDir . '/string_encrypted.aes';
 
-            $success = $aes->encryptStringToFile($testData, $outputFile);
-            if (!$success) {
-                echo "字符串到文件加密失败\n<br/>";
-                return false;
-            }
-            echo "字符串到文件加密成功\n<br/>";
+            // 加密字符串到文件
+            $success = $aes->encryptStringToFile($testData, $outputFile, true);
+            if (!$success) return false;
 
+            // 从文件解密字符串
             $decrypted = $aes->decryptFileToString($outputFile);
-            echo "文件到字符串解密成功\n<br/>";
 
-            $result = $testData === $decrypted;
-            echo "字符串内容验证: " . ($result ? "成功" : "失败") . "\n<br/>";
-
+            // 清理测试文件
             unlink($outputFile);
-            return $result;
+
+            return $decrypted === $testData;
         });
 
-        // 测试5: 批量文件加密
-        $this->runTest('AES-批量文件加密', function() {
+        $this->testCase("AES-14", "AES批量文件加密", function() {
             $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
+            $aes = new AESCrypto($key, 'aes-256-cbc');
 
             $files = [
                 $this->testDataDir . '/small.txt',
                 $this->testDataDir . '/medium.txt'
             ];
 
-            $outputDir = $this->testDataDir . '/batch_encrypted';
-            if (!is_dir($outputDir)) {
-                mkdir($outputDir, 0755, true);
-            }
+            $outputDir = $this->testDataDir . '/batch_output';
 
-            $results = $aes->encryptFiles($files, $outputDir);
+            // 批量加密文件
+            $results = $aes->encryptFiles($files, $outputDir, 65536, true);
 
             $successCount = 0;
-            foreach ($results as $file => $result) {
-                echo "文件 {$file}: " . ($result['success'] ? "成功" : "失败") . "\n<br/>";
+            foreach ($results as $result) {
                 if ($result['success']) {
                     $successCount++;
+                    // 清理加密文件
+                    unlink($result['output_file']);
                 }
             }
 
-            // 清理
-            $this->deleteDirectory($outputDir);
+            // 清理输出目录
+            if (is_dir($outputDir)) {
+                rmdir($outputDir);
+            }
 
             return $successCount === count($files);
         });
-
-        // 测试6: HMAC签名
-        $this->runTest('AES-HMAC签名验证', function() {
-            $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
-
-            $data = "需要签名的数据";
-            $hmac = $aes->calculateHMAC($data);
-
-            echo "HMAC签名: " . substr($hmac, 0, 20) . "...\n<br/>";
-
-            $verified = $aes->verifyHMAC($data, $hmac);
-            echo "HMAC验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
-        });
-
-        // 测试7: 加密并签名
-        $this->runTest('AES-加密并签名', function() {
-            $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
-
-            $data = "需要加密并签名的数据";
-            $package = $aes->encryptAndSign($data);
-
-            echo "加密数据包生成成功\n<br/>";
-            echo "包含字段: " . implode(', ', array_keys($package)) . "\n<br/>";
-
-            $decrypted = $aes->decryptAndVerify($package);
-            echo "解密并验证: " . ($data === $decrypted ? "成功" : "失败") . "\n<br/>";
-
-            return $data === $decrypted;
-        });
-
-        // 测试8: 性能测试
-        $this->runTest('AES-性能测试', function() {
-            $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, false);
-
-            $performance = $aes->testPerformance(1024, 100);
-
-            echo "加密方法: {$performance['method']}\n<br/>";
-            echo "吞吐量: {$performance['throughput']}\n<br/>";
-            echo "操作次数/秒: {$performance['operations_per_second']}\n<br/>";
-            echo "总时间: {$performance['total_time']}\n<br/>";
-
-            return $performance['throughput'] > 0;
-        });
-
-        // 测试9: 密钥管理
-        $this->runTest('AES-密钥管理', function() {
-            $key = AESCrypto::generateKey('aes-256-cbc');
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
-
-            $originalMethod = $aes->getMethod();
-            $originalIV = $aes->getIV();
-
-            echo "原始方法: {$originalMethod}\n<br/>";
-            echo "原始IV: " . bin2hex($originalIV) . "\n<br/>";
-
-            // 更改密钥
-            $newKey = AESCrypto::generateKey('aes-256-cbc');
-            $aes->changeKey($newKey);
-            echo "密钥更改成功\n<br/>";
-
-            // 更改方法
-            $aes->changeMethod('aes-128-cbc');
-            $newMethod = $aes->getMethod();
-            echo "方法更改: {$originalMethod} -> {$newMethod}\n<br/>";
-
-            return $newMethod === 'aes-128-cbc';
-        });
-
-        // 测试10: 从密码生成密钥
-        $this->runTest('AES-从密码生成密钥', function() {
-            $password = "my_secure_password";
-            $salt = "random_salt_value";
-
-            $key = AESCrypto::generateKeyFromPassword($password, $salt, 'aes-256-cbc');
-
-            echo "从密码生成的密钥长度: " . strlen($key) . " 字节\n<br/>";
-
-            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
-            $testData = "测试密码派生密钥";
-
-            $encrypted = $aes->encrypt($testData);
-            $decrypted = $aes->decrypt($encrypted);
-
-            return $testData === $decrypted;
-        });
-
-        echo "\n<br/>";
     }
 
     /**
-     * ECC加密测试
+     * AES高级功能测试
      */
-    private function testECCCrypto(): void
+    private function testAESAdvancedFeatures(): void
     {
-        echo "=== ECC加密测试 ===\n<br/>";
+        $this->testCase("AES-15", "AES HMAC签名验证", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
 
-        // 测试1: 基本密钥生成和签名
-        $this->runTest('ECC-基本密钥生成和签名', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+            $data = "需要签名的数据内容";
 
-            $data = "Hello, ECC Signature!";
-            $signature = $ecc->sign($data);
+            // 计算HMAC
+            $hmac = $aes->calculateHMAC($data, 'sha256');
 
-            echo "数据签名成功\n<br/>";
-            echo "签名: " . substr($signature, 0, 30) . "...\n<br/>";
+            // 验证HMAC
+            $valid = $aes->verifyHMAC($data, $hmac, 'sha256');
 
-            $verified = $ecc->verify($data, $signature);
-            echo "签名验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
+            return $valid;
         });
 
-        // 测试2: 不同曲线测试
-        $this->runTest('ECC-不同曲线测试', function() {
-            $curves = ['prime256v1', 'secp384r1'];
-            $testData = "测试不同ECC曲线";
+        $this->testCase("AES-16", "AES加密并签名", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $data = "需要加密并签名的数据";
+
+            // 加密并签名
+            $package = $aes->encryptAndSign($data, 'sha256');
+
+            // 解密并验证
+            $decrypted = $aes->decryptAndVerify($package);
+
+            return $decrypted === $data;
+        });
+
+        $this->testCase("AES-17", "AES获取加密信息", function() {
+            $key = AESCrypto::generateKey('aes-256-gcm');
+            $aes = new AESCrypto($key, 'aes-256-gcm');
+
+            $info = $aes->getCipherInfo();
+
+            $checks = [
+                isset($info['method']),
+                isset($info['key_length']),
+                isset($info['iv_length']),
+                isset($info['authenticated_mode']),
+                $info['method'] === 'aes-256-gcm',
+                $info['authenticated_mode'] === true
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("AES-18", "AES性能测试", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes = new AESCrypto($key, 'aes-256-cbc');
+
+            $performance = $aes->testPerformance(1024, 10);
+
+            $checks = [
+                isset($performance['method']),
+                isset($performance['throughput']),
+                isset($performance['operations_per_second']),
+                $performance['method'] === 'aes-256-cbc'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("AES-19", "AES配置导出导入", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+            $aes1 = new AESCrypto($key, 'aes-256-cbc');
+
+            // 导出配置
+            $config = $aes1->exportConfig();
+
+            // 导入配置创建新实例
+            $aes2 = AESCrypto::fromConfig($config);
+
+            $data = "配置导出导入测试数据";
+            $encrypted = $aes1->encrypt($data);
+            $decrypted = $aes2->decrypt($encrypted);
+
+            return $decrypted === $data;
+        });
+
+        $this->testCase("AES-20", "AES调试模式", function() {
+            $key = AESCrypto::generateKey('aes-256-cbc');
+
+            // 启用调试模式
+            $aes = new AESCrypto($key, 'aes-256-cbc', null, true);
+
+            $data = "调试模式测试";
+            $encrypted = $aes->encrypt($data);
+            $decrypted = $aes->decrypt($encrypted);
+
+            // 禁用调试模式
+            $aes->setDebugMode(false);
+
+            return $decrypted === $data;
+        });
+    }
+
+    /**
+     * AES错误处理测试
+     */
+    private function testAESErrorHandling(): void
+    {
+        $this->testCase("AES-21", "AES空数据加密", function() {
+            try {
+                $key = AESCrypto::generateKey('aes-256-cbc');
+                $aes = new AESCrypto($key, 'aes-256-cbc');
+
+                $aes->encrypt("");
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("AES-22", "AES无效密钥长度", function() {
+            try {
+                $invalidKey = "too_short_key";
+                new AESCrypto($invalidKey, 'aes-256-cbc');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("AES-23", "AES无效加密方法", function() {
+            try {
+                $key = AESCrypto::generateKey('aes-256-cbc');
+                new AESCrypto($key, 'invalid-method');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("AES-24", "AES文件不存在错误", function() {
+            try {
+                $key = AESCrypto::generateKey('aes-256-cbc');
+                $aes = new AESCrypto($key, 'aes-256-cbc');
+
+                $aes->encryptFile('nonexistent.file', 'output.enc');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("AES-25", "AES无效HMAC算法", function() {
+            try {
+                $key = AESCrypto::generateKey('aes-256-cbc');
+                $aes = new AESCrypto($key, 'aes-256-cbc');
+
+                $aes->calculateHMAC('data', 'invalid-algorithm');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+    }
+
+    /**
+     * RSA基础功能测试
+     */
+    private function testRSABasicFunctions(): void
+    {
+        $this->testCase("RSA-01", "RSA密钥对生成", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+
+            $checks = [
+                isset($keyPair['private_key']),
+                isset($keyPair['public_key']),
+                isset($keyPair['key_size']),
+                strlen($keyPair['private_key']) > 0,
+                strlen($keyPair['public_key']) > 0,
+                $keyPair['key_size'] === 2048
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("RSA-02", "RSA从密钥创建实例", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+
+            // 从私钥创建实例
+            $rsaPrivate = RSACrypto::createFromKey($keyPair['private_key']);
+
+            // 从公钥创建实例
+            $rsaPublic = RSACrypto::createFromPublicKey($keyPair['public_key']);
+
+            return $rsaPrivate->hasPrivateKey() && $rsaPublic->hasPublicKey();
+        });
+
+        $this->testCase("RSA-03", "RSA不同密钥长度", function() {
+            $keySizes = [2048, 3072, 4096];
+            $results = [];
+
+            foreach ($keySizes as $keySize) {
+                $keyPair = RSACrypto::createKeyPair($keySize);
+                $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+                $results[] = $rsa->getKeySize() === $keySize;
+            }
+
+            return !in_array(false, $results, true);
+        });
+    }
+
+    /**
+     * RSA加密解密测试
+     */
+    private function testRSAEncryptionDecryption(): void
+    {
+        $this->testCase("RSA-04", "RSA基础加密解密", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $testData = "Hello RSA Encryption! 测试中文内容 🚀";
+            $encrypted = $rsa->encrypt($testData);
+            $decrypted = $rsa->decrypt($encrypted);
+
+            return $decrypted === $testData;
+        });
+
+        $this->testCase("RSA-05", "RSA不同填充方式", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $testData = "填充方式测试数据";
+            $results = [];
+
+            // PKCS1 v1.5填充
+            $encrypted1 = $rsa->encrypt($testData, OPENSSL_PKCS1_PADDING);
+            $decrypted1 = $rsa->decrypt($encrypted1, OPENSSL_PKCS1_PADDING);
+            $results[] = $decrypted1 === $testData;
+
+            // OAEP填充
+            $encrypted2 = $rsa->encrypt($testData, OPENSSL_PKCS1_OAEP_PADDING);
+            $decrypted2 = $rsa->decrypt($encrypted2, OPENSSL_PKCS1_OAEP_PADDING);
+            $results[] = $decrypted2 === $testData;
+
+            return !in_array(false, $results, true);
+        });
+
+        $this->testCase("RSA-06", "RSA大数据分块加密", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            // 生成大于RSA块大小的数据
+            $largeData = str_repeat("大数据分块加密测试", 100);
+
+            $encrypted = $rsa->encrypt($largeData, OPENSSL_PKCS1_OAEP_PADDING, true);
+            $decrypted = $rsa->decrypt($encrypted, OPENSSL_PKCS1_OAEP_PADDING);
+
+            return $decrypted === $largeData;
+        });
+    }
+
+    /**
+     * RSA签名验证测试
+     */
+    private function testRSASigningVerification(): void
+    {
+        $this->testCase("RSA-07", "RSA数据签名验证", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $data = "需要签名的数据内容";
+
+            // 签名
+            $signature = $rsa->sign($data);
+
+            // 验证签名
+            $valid = $rsa->verify($data, $signature);
+
+            return $valid;
+        });
+
+        $this->testCase("RSA-08", "RSA文件签名验证", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $filePath = $this->testDataDir . '/small.txt';
+
+            // 文件签名
+            $signature = $rsa->signFile($filePath);
+
+            // 验证文件签名
+            $valid = $rsa->verifyFile($filePath, $signature);
+
+            return $valid;
+        });
+
+        $this->testCase("RSA-09", "RSA不同哈希算法签名", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $data = "不同哈希算法测试";
+            $results = [];
+
+            $algorithms = ['sha256', 'sha384', 'sha512'];
+            foreach ($algorithms as $algorithm) {
+                $signature = $rsa->sign($data, $algorithm);
+                $valid = $rsa->verify($data, $signature, $algorithm);
+                $results[] = $valid;
+            }
+
+            return !in_array(false, $results, true);
+        });
+
+        $this->testCase("RSA-10", "RSA加密并签名", function() {
+            // 发送方
+            $senderKeyPair = RSACrypto::createKeyPair(2048);
+            $sender = RSACrypto::createFromKey($senderKeyPair['private_key']);
+
+            // 接收方
+            $receiverKeyPair = RSACrypto::createKeyPair(2048);
+            $receiver = RSACrypto::createFromKey($receiverKeyPair['private_key']);
+
+            $data = "需要加密并签名的敏感数据";
+
+            // 发送方加密并签名
+            $package = $sender->encryptAndSign($data, $receiver);
+
+            // 接收方解密并验证
+            $decrypted = $receiver->decryptAndVerify($package, $sender);
+
+            return $decrypted === $data;
+        });
+    }
+
+    /**
+     * RSA文件操作测试
+     */
+    private function testRSAFileOperations(): void
+    {
+        $this->testCase("RSA-11", "RSA文件加密解密", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $inputFile = $this->testDataDir . '/small.txt';
+            $encryptedFile = $this->testDataDir . '/small_encrypted.rsa';
+            $decryptedFile = $this->testDataDir . '/small_decrypted.txt';
+
+            // 加密文件
+            $success = $rsa->encryptFile($inputFile, $encryptedFile);
+            if (!$success) return false;
+
+            // 解密文件
+            $success = $rsa->decryptFile($encryptedFile, $decryptedFile);
+            if (!$success) return false;
+
+            // 验证内容
+            $original = file_get_contents($inputFile);
+            $decrypted = file_get_contents($decryptedFile);
+
+            // 清理测试文件
+            unlink($encryptedFile);
+            unlink($decryptedFile);
+
+            return $original === $decrypted;
+        });
+
+        $this->testCase("RSA-12", "RSA批量文件加密", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $files = [
+                $this->testDataDir . '/small.txt',
+                $this->testDataDir . '/medium.txt'
+            ];
+
+            $outputDir = $this->testDataDir . '/rsa_batch_output';
+
+            // 批量加密文件
+            $results = $rsa->encryptFiles($files, $outputDir);
+
+            $successCount = 0;
+            foreach ($results as $result) {
+                if ($result['success']) {
+                    $successCount++;
+                    // 清理加密文件
+                    unlink($result['output_file']);
+                }
+            }
+
+            // 清理输出目录
+            if (is_dir($outputDir)) {
+                rmdir($outputDir);
+            }
+
+            return $successCount === count($files);
+        });
+    }
+
+    /**
+     * RSA高级功能测试
+     */
+    private function testRSAAdvancedFeatures(): void
+    {
+        $this->testCase("RSA-13", "RSA密钥导出", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            // 导出私钥
+            $privateKey = $rsa->exportPrivateKey('password123');
+
+            // 导出公钥
+            $publicKey = $rsa->exportPublicKey();
+
+            return strlen($privateKey) > 0 && strlen($publicKey) > 0;
+        });
+
+        $this->testCase("RSA-14", "RSA密钥详情", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $details = $rsa->getKeyDetails();
+
+            $checks = [
+                isset($details['bits']),
+                isset($details['key']),
+                $details['bits'] === 2048
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("RSA-15", "RSA密钥对验证", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            return $rsa->verifyKeyPair();
+        });
+
+        $this->testCase("RSA-16", "RSA密钥指纹", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $fingerprint = $rsa->getKeyFingerprint('sha256');
+
+            return strlen($fingerprint) === 64; // SHA256指纹长度为64字符
+        });
+
+        $this->testCase("RSA-17", "RSA加密信息", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $info = $rsa->getCipherInfo();
+
+            $checks = [
+                isset($info['key_size']),
+                isset($info['hash_algorithm']),
+                isset($info['has_private_key']),
+                isset($info['has_public_key']),
+                $info['key_size'] === 2048,
+                $info['has_private_key'] === true,
+                $info['has_public_key'] === true
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("RSA-18", "RSA性能测试", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $performance = $rsa->testKeyStrength(10);
+
+            $checks = [
+                isset($performance['key_size']),
+                isset($performance['encrypt_speed']),
+                isset($performance['decrypt_speed']),
+                $performance['key_size'] === 2048
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("RSA-19", "RSA JWK导出", function() {
+            $keyPair = RSACrypto::createKeyPair(2048);
+            $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+            $jwk = $rsa->exportAsJWK();
+
+            $checks = [
+                isset($jwk['kty']),
+                isset($jwk['n']),
+                isset($jwk['e']),
+                $jwk['kty'] === 'RSA'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+    }
+
+    /**
+     * RSA错误处理测试
+     */
+    private function testRSAErrorHandling(): void
+    {
+        $this->testCase("RSA-20", "RSA无私钥解密错误", function() {
+            try {
+                $keyPair = RSACrypto::createKeyPair(2048);
+                $rsaPublic = RSACrypto::createFromPublicKey($keyPair['public_key']);
+
+                $encrypted = "some_encrypted_data";
+                $rsaPublic->decrypt($encrypted);
+                return false; // 应该抛出异常
+            } catch (RuntimeException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("RSA-21", "RSA无公钥加密错误", function() {
+            try {
+                $keyPair = RSACrypto::createKeyPair(2048);
+                $rsaPrivate = RSACrypto::createFromKey($keyPair['private_key']);
+
+                // 模拟没有公钥的情况（实际上createFromKey会导出公钥）
+                // 这里我们测试无效数据的情况
+                $rsaPrivate->encrypt("");
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("RSA-22", "RSA无效密钥格式", function() {
+            try {
+                RSACrypto::createFromKey("invalid_private_key_format");
+                return false; // 应该抛出异常
+            } catch (RuntimeException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+
+        $this->testCase("RSA-23", "RSA文件不存在错误", function() {
+            try {
+                $keyPair = RSACrypto::createKeyPair(2048);
+                $rsa = RSACrypto::createFromKey($keyPair['private_key']);
+
+                $rsa->encryptFile('nonexistent.file', 'output.rsa');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
+            }
+        });
+    }
+
+    /**
+     * ECC基础功能测试
+     */
+    private function ECCBasicFunctions(): void
+    {
+        $this->testCase("ECC-01", "ECC密钥对生成", function() {
+            $curves = ['prime256v1', 'secp384r1', 'secp521r1'];
+            $results = [];
 
             foreach ($curves as $curve) {
-                $ecc = new ECCCrypto(null, null, $curve, '', false);
+                $keyPair = ECCCrypto::createKeyPair($curve);
 
-                $signature = $ecc->sign($testData);
-                $verified = $ecc->verify($testData, $signature);
+                $checks = [
+                    isset($keyPair['private_key']),
+                    isset($keyPair['public_key']),
+                    isset($keyPair['curve_name']),
+                    strlen($keyPair['private_key']) > 0,
+                    strlen($keyPair['public_key']) > 0,
+                    $keyPair['curve_name'] === $curve
+                ];
 
-                if (!$verified) {
-                    echo "曲线 {$curve} 测试失败\n<br/>";
-                    return false;
-                }
-                echo "曲线 {$curve} 测试成功\n<br/>";
+                $results[] = !in_array(false, $checks, true);
             }
-            return true;
+
+            return !in_array(false, $results, true);
         });
 
-        // 测试3: 文件签名验证
-        $this->runTest('ECC-文件签名验证', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+        $this->testCase("ECC-02", "ECC从密钥创建实例", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
 
-            $filePath = $this->testDataDir . '/medium.txt';
+            // 从私钥创建实例
+            $eccPrivate = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            // 从公钥创建实例
+            $eccPublic = ECCCrypto::createFromPublicKey($keyPair['public_key']);
+
+            return $eccPrivate->hasPrivateKey() && $eccPublic->hasPublicKey();
+        });
+
+        $this->testCase("ECC-03", "ECC曲线信息", function() {
+            $ecc = new ECCCrypto(null, null, 'prime256v1');
+
+            $curveInfo = $ecc->getCurveSecurityInfo();
+
+            $checks = [
+                isset($curveInfo['curve_name']),
+                isset($curveInfo['display_name']),
+                isset($curveInfo['security_level']),
+                $curveInfo['curve_name'] === 'prime256v1'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+    }
+
+    /**
+     * ECC签名验证测试
+     */
+    private function ECCSigningVerification(): void
+    {
+        $this->testCase("ECC-04", "ECC数据签名验证", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $data = "需要签名的ECC数据内容";
+
+            // 签名
+            $signature = $ecc->sign($data);
+
+            // 验证签名
+            $valid = $ecc->verify($data, $signature);
+
+            return $valid;
+        });
+
+        $this->testCase("ECC-05", "ECC文件签名验证", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $filePath = $this->testDataDir . '/small.txt';
+
+            // 文件签名
             $signature = $ecc->signFile($filePath);
 
-            echo "文件签名成功\n<br/>";
-            echo "签名: " . substr($signature, 0, 30) . "...\n<br/>";
+            // 验证文件签名
+            $valid = $ecc->verifyFile($filePath, $signature);
 
-            $verified = $ecc->verifyFile($filePath, $signature);
-            echo "文件签名验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
+            return $valid;
         });
 
-        // 测试4: ECDH共享密钥
-        $this->runTest('ECC-ECDH共享密钥', function() {
-            // 生成两个密钥对
-            $alice = new ECCCrypto(null, null, 'prime256v1', '', false);
-            $bob = new ECCCrypto(null, null, 'prime256v1', '', false);
+        $this->testCase("ECC-06", "ECC不同哈希算法签名", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            // 交换公钥并计算共享密钥
-            $alicePublic = $alice->exportPublicKey();
-            $bobPublic = $bob->exportPublicKey();
+            $data = "不同ECC哈希算法测试";
+            $results = [];
 
-            $aliceShared = $alice->computeSharedSecret($bobPublic);
-            $bobShared = $bob->computeSharedSecret($alicePublic);
+            $algorithms = ['sha256', 'sha384', 'sha512'];
+            foreach ($algorithms as $algorithm) {
+                $signature = $ecc->sign($data, $algorithm);
+                $valid = $ecc->verify($data, $signature, $algorithm);
+                $results[] = $valid;
+            }
 
-            echo "Alice共享密钥: " . bin2hex(substr($aliceShared, 0, 16)) . "...\n<br/>";
-            echo "Bob共享密钥: " . bin2hex(substr($bobShared, 0, 16)) . "...\n<br/>";
-
-            $result = $aliceShared === $bobShared;
-            echo "共享密钥匹配: " . ($result ? "成功" : "失败") . "\n<br/>";
-
-            return $result;
+            return !in_array(false, $results, true);
         });
 
-        // 测试5: 密钥导出导入
-        $this->runTest('ECC-密钥导出导入', function() {
-            $original = new ECCCrypto(null, null, 'prime256v1', '', true);
+        $this->testCase("ECC-07", "ECC确定性签名", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            $privateKey = $original->exportPrivateKey();
-            $publicKey = $original->exportPublicKey();
+            $data = "确定性ECDSA签名测试";
 
-            echo "私钥导出成功: " . strlen($privateKey) . " 字节\n<br/>";
-            echo "公钥导出成功: " . strlen($publicKey) . " 字节\n<br/>";
+            // 确定性签名
+            $signature1 = $ecc->sign($data, 'sha256', true);
+            $signature2 = $ecc->sign($data, 'sha256', true);
 
-            // 从导出的密钥创建新实例
-            $restored = new ECCCrypto($privateKey, $publicKey, 'prime256v1', '', true);
+            // 验证两个签名都应该有效且相同（确定性）
+            $valid1 = $ecc->verify($data, $signature1);
+            $valid2 = $ecc->verify($data, $signature2);
 
-            $testData = "测试密钥导出导入";
-            $signature = $original->sign($testData);
-            $verified = $restored->verify($testData, $signature);
-
-            echo "密钥恢复验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
+            return $valid1 && $valid2 && ($signature1 === $signature2);
         });
 
-        // 测试6: 带时间戳的签名
-        $this->runTest('ECC-带时间戳签名', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+        $this->testCase("ECC-08", "ECC带时间戳签名", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            $data = "带时间戳的数据";
+            $data = "带时间戳的签名数据";
+
+            // 生成带时间戳的签名
             $signedPackage = $ecc->signWithTimestamp($data);
 
-            echo "带时间戳签名生成成功\n<br/>";
-            echo "时间戳: {$signedPackage['timestamp']}\n<br/>";
-
-            $verified = $ecc->verifyWithTimestamp(
+            // 验证带时间戳的签名
+            $valid = $ecc->verifyWithTimestamp(
                 $data,
                 $signedPackage['signature'],
                 $signedPackage['timestamp']
             );
 
-            echo "带时间戳验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
+            return $valid;
+        });
+    }
 
-            return $verified;
+    /**
+     * ECC密钥交换测试
+     */
+    private function ECCKeyExchange(): void
+    {
+        $this->testCase("ECC-09", "ECDH密钥交换", function() {
+            // Alice生成密钥对
+            $aliceKeyPair = ECCCrypto::createKeyPair('prime256v1');
+            $alice = ECCCrypto::createFromKey($aliceKeyPair['private_key']);
+
+            // Bob生成密钥对
+            $bobKeyPair = ECCCrypto::createKeyPair('prime256v1');
+            $bob = ECCCrypto::createFromKey($bobKeyPair['private_key']);
+
+            // Alice计算共享密钥
+            $aliceShared = $alice->computeSharedSecret($bobKeyPair['public_key']);
+
+            // Bob计算共享密钥
+            $bobShared = $bob->computeSharedSecret($aliceKeyPair['public_key']);
+
+            // 共享密钥应该相同
+            return $aliceShared === $bobShared;
         });
 
-        // 测试7: JWK格式导出
-        $this->runTest('ECC-JWK格式导出', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+        $this->testCase("ECC-10", "ECDH带KDF密钥交换", function() {
+            // Alice生成密钥对
+            $aliceKeyPair = ECCCrypto::createKeyPair('prime256v1');
+            $alice = ECCCrypto::createFromKey($aliceKeyPair['private_key']);
 
-            $jwkPrivate = $ecc->exportAsJWK(true);
-            $jwkPublic = $ecc->exportAsJWK(false);
+            // Bob生成密钥对
+            $bobKeyPair = ECCCrypto::createKeyPair('prime256v1');
+            $bob = ECCCrypto::createFromKey($bobKeyPair['private_key']);
 
-            echo "JWK私钥包含字段: " . implode(', ', array_keys($jwkPrivate)) . "\n<br/>";
-            echo "JWK公钥包含字段: " . implode(', ', array_keys($jwkPublic)) . "\n<br/>";
-            echo "曲线: {$jwkPrivate['crv']}\n<br/>";
+            $salt = "key_exchange_salt";
+            $info = "application_data";
 
-            return isset($jwkPrivate['d']) && !isset($jwkPublic['d']);
+            // Alice计算共享密钥（带KDF）
+            $aliceShared = $alice->computeSharedSecret(
+                $bobKeyPair['public_key'],
+                32,
+                'sha256',
+                $info
+            );
+
+            // Bob计算共享密钥（带KDF）
+            $bobShared = $bob->computeSharedSecret(
+                $aliceKeyPair['public_key'],
+                32,
+                'sha256',
+                $info
+            );
+
+            // 共享密钥应该相同
+            return $aliceShared === $bobShared;
         });
+    }
 
-        // 测试8: 批量文件签名
-        $this->runTest('ECC-批量文件签名', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+    /**
+     * ECC文件操作测试
+     */
+    private function ECCFileOperations(): void
+    {
+        $this->testCase("ECC-11", "ECC批量文件签名", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
             $files = [
                 $this->testDataDir . '/small.txt',
                 $this->testDataDir . '/medium.txt'
             ];
 
-            $results = $ecc->signFiles($files);
+            // 批量签名文件
+            $results = $ecc->signFiles($files, 'sha256', true);
 
             $successCount = 0;
-            foreach ($results as $file => $result) {
-                echo "文件 {$file}: " . ($result['success'] ? "成功" : "失败") . "\n<br/>";
+            foreach ($results as $result) {
                 if ($result['success']) {
                     $successCount++;
                 }
@@ -475,359 +1229,316 @@ class CryptoTestSuite
             return $successCount === count($files);
         });
 
-        // 测试9: 证书操作
-        $this->runTest('ECC-证书操作', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', true);
+        $this->testCase("ECC-12", "ECC批量文件验证", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            // 生成CSR
+            $files = [
+                $this->testDataDir . '/small.txt',
+                $this->testDataDir . '/medium.txt'
+            ];
+
+            // 先批量签名
+            $signatureResults = $ecc->signFiles($files, 'sha256', true);
+
+            // 准备验证数据
+            $filesWithSignatures = [];
+            foreach ($signatureResults as $filePath => $result) {
+                if ($result['success']) {
+                    $filesWithSignatures[$filePath] = $result['signature'];
+                }
+            }
+
+            // 批量验证签名
+            $verifyResults = $ecc->verifyFiles($filesWithSignatures, 'sha256');
+
+            $successCount = 0;
+            foreach ($verifyResults as $result) {
+                if ($result['success'] && $result['verified']) {
+                    $successCount++;
+                }
+            }
+
+            return $successCount === count($filesWithSignatures);
+        });
+    }
+
+    /**
+     * ECC高级功能测试
+     */
+    private function ECCAdvancedFeatures(): void
+    {
+        $this->testCase("ECC-13", "ECC密钥导出", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            // 导出私钥
+            $privateKey = $ecc->exportPrivateKey('password123');
+
+            // 导出公钥
+            $publicKey = $ecc->exportPublicKey();
+
+            return strlen($privateKey) > 0 && strlen($publicKey) > 0;
+        });
+
+        $this->testCase("ECC-14", "ECC密钥详情", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $details = $ecc->getKeyDetails();
+
+            $checks = [
+                isset($details['ec']),
+                isset($details['ec']['curve_name']),
+                $details['ec']['curve_name'] === 'prime256v1'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("ECC-15", "ECC密钥对验证", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            return $ecc->verifyKeyPair();
+        });
+
+        $this->testCase("ECC-16", "ECC密钥指纹", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $fingerprint = $ecc->getKeyFingerprint('sha256');
+
+            return strlen($fingerprint) === 64; // SHA256指纹长度为64字符
+        });
+
+        $this->testCase("ECC-17", "ECC加密信息", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $info = $ecc->getCipherInfo();
+
+            $checks = [
+                isset($info['curve_name']),
+                isset($info['has_private_key']),
+                isset($info['has_public_key']),
+                $info['curve_name'] === 'prime256v1',
+                $info['has_private_key'] === true,
+                $info['has_public_key'] === true
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("ECC-18", "ECC性能测试", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $performance = $ecc->testKeyStrength(50);
+
+            $checks = [
+                isset($performance['curve_name']),
+                isset($performance['sign_speed']),
+                isset($performance['verify_speed']),
+                $performance['curve_name'] === 'prime256v1'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("ECC-19", "ECC JWK导出", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+            $jwk = $ecc->exportAsJWK(true); // 包含私钥
+
+            $checks = [
+                isset($jwk['kty']),
+                isset($jwk['crv']),
+                isset($jwk['x']),
+                isset($jwk['y']),
+                isset($jwk['d']), // 私钥参数
+                $jwk['kty'] === 'EC',
+                $jwk['crv'] === 'prime256v1'
+            ];
+
+            return !in_array(false, $checks, true);
+        });
+
+        $this->testCase("ECC-20", "ECC证书签名请求", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
             $dn = [
-                'countryName' => 'CN',
-                'stateOrProvinceName' => 'Beijing',
-                'localityName' => 'Beijing',
-                'organizationName' => 'Test Company',
-                'commonName' => 'test.example.com'
+                "countryName" => "CN",
+                "stateOrProvinceName" => "Beijing",
+                "localityName" => "Beijing",
+                "organizationName" => "Test Organization",
+                "organizationalUnitName" => "IT Department",
+                "commonName" => "example.com",
+                "emailAddress" => "admin@example.com"
             ];
 
             $csr = $ecc->generateCSR($dn);
-            echo "CSR生成成功: " . strlen($csr) . " 字节\n<br/>";
 
-            // 这里通常需要CA签名生成证书，我们只测试CSR生成
-            return !empty($csr);
+            return strlen($csr) > 0;
         });
 
-        // 测试10: 性能测试
-        $this->runTest('ECC-性能测试', function() {
-            $ecc = new ECCCrypto(null, null, 'prime256v1', '', false);
+        $this->testCase("ECC-21", "ECC曲线更改", function() {
+            $keyPair = ECCCrypto::createKeyPair('prime256v1');
+            $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            $performance = $ecc->testKeyStrength();
+            // 更改曲线
+            $ecc->changeCurve('secp384r1');
 
-            echo "曲线: {$performance['curve_name']}\n<br/>";
-            echo "签名速度: {$performance['sign_speed']}\n<br/>";
-            echo "验证速度: {$performance['verify_speed']}\n<br/>";
-            echo "性能评级: {$performance['performance_rating']}\n<br/>";
-
-            return !empty($performance['performance_rating']);
+            return $ecc->getCurveName() === 'secp384r1';
         });
-
-        echo "\n<br/>";
     }
 
     /**
-     * RSA加密测试
+     * ECC错误处理测试
      */
-    private function testRSACrypto(): void
+    private function ECCErrorHandling(): void
     {
-        echo "=== RSA加密测试 ===\n<br/>";
+        $this->testCase("ECC-22", "ECC无私钥签名错误", function() {
+            try {
+                $keyPair = ECCCrypto::createKeyPair('prime256v1');
+                $eccPublic = ECCCrypto::createFromPublicKey($keyPair['public_key']);
 
-        // 测试1: 基本加密解密
-        $this->runTest('RSA-基本加密解密', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $originalData = "Hello, RSA Encryption! 这是RSA测试数据。";
-            $encrypted = $rsa->encrypt($originalData);
-            $decrypted = $rsa->decrypt($encrypted);
-
-            echo "原始数据: {$originalData}\n<br/>";
-            echo "加密数据: " . substr($encrypted, 0, 50) . "...\n<br/>";
-            echo "解密数据: {$decrypted}\n<br/>";
-            echo "测试结果: " . ($originalData === $decrypted ? "成功" : "失败") . "\n<br/>";
-
-            return $originalData === $decrypted;
-        });
-
-        // 测试2: 不同密钥长度
-        $this->runTest('RSA-不同密钥长度', function() {
-            $keySizes = [2048, 3072];
-            $testData = "测试不同RSA密钥长度";
-
-            foreach ($keySizes as $keySize) {
-                $rsa = new RSACrypto(null, null, $keySize, 'sha256', false);
-
-                $encrypted = $rsa->encrypt($testData);
-                $decrypted = $rsa->decrypt($encrypted);
-
-                if ($testData !== $decrypted) {
-                    echo "密钥长度 {$keySize} 测试失败\n<br/>";
-                    return false;
-                }
-                echo "密钥长度 {$keySize} 测试成功\n<br/>";
+                $eccPublic->sign("data");
+                return false; // 应该抛出异常
+            } catch (RuntimeException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
             }
-            return true;
         });
 
-        // 测试3: 不同填充方式
-        $this->runTest('RSA-不同填充方式', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-            $testData = "测试不同填充方式";
-
-            $paddings = [
-                OPENSSL_PKCS1_PADDING => 'PKCS1',
-                OPENSSL_PKCS1_OAEP_PADDING => 'OAEP'
-            ];
-
-            foreach ($paddings as $padding => $name) {
-                $encrypted = $rsa->encrypt($testData, $padding);
-                $decrypted = $rsa->decrypt($encrypted, $padding);
-
-                if ($testData !== $decrypted) {
-                    echo "填充方式 {$name} 测试失败\n<br/>";
-                    return false;
-                }
-                echo "填充方式 {$name} 测试成功\n<br/>";
+        $this->testCase("ECC-23", "ECC无效曲线错误", function() {
+            try {
+                new ECCCrypto(null, null, 'invalid_curve');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
             }
-            return true;
         });
 
-        // 测试4: 文件加密解密
-        $this->runTest('RSA-文件加密解密', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
+        $this->testCase("ECC-24", "ECC无效签名算法", function() {
+            try {
+                $keyPair = ECCCrypto::createKeyPair('prime256v1');
+                $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
 
-            $inputFile = $this->testDataDir . '/small.txt';
-            $encryptedFile = $this->testDataDir . '/small_encrypted.rsa';
-            $decryptedFile = $this->testDataDir . '/small_decrypted_rsa.txt';
-
-            // 加密文件
-            $success = $rsa->encryptFile($inputFile, $encryptedFile);
-            if (!$success) {
-                echo "RSA文件加密失败\n<br/>";
-                return false;
+                $ecc->sign("data", "invalid_algorithm");
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
             }
-            echo "RSA文件加密成功: " . filesize($encryptedFile) . " 字节\n<br/>";
+        });
 
-            // 解密文件
-            $success = $rsa->decryptFile($encryptedFile, $decryptedFile);
-            if (!$success) {
-                echo "RSA文件解密失败\n<br/>";
-                return false;
+        $this->testCase("ECC-25", "ECC文件不存在错误", function() {
+            try {
+                $keyPair = ECCCrypto::createKeyPair('prime256v1');
+                $ecc = ECCCrypto::createFromKey($keyPair['private_key']);
+
+                $ecc->signFile('nonexistent.file');
+                return false; // 应该抛出异常
+            } catch (InvalidArgumentException $e) {
+                return true; // 期望的异常
+            } catch (Exception $e) {
+                return false; // 其他异常
             }
-            echo "RSA文件解密成功: " . filesize($decryptedFile) . " 字节\n<br/>";
-
-            // 验证内容
-            $original = file_get_contents($inputFile);
-            $decrypted = file_get_contents($decryptedFile);
-
-            $result = $original === $decrypted;
-            echo "RSA文件内容验证: " . ($result ? "成功" : "失败") . "\n<br/>";
-
-            // 清理
-            unlink($encryptedFile);
-            unlink($decryptedFile);
-
-            return $result;
         });
-
-        // 测试5: 签名验证
-        $this->runTest('RSA-签名验证', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $data = "需要RSA签名的数据";
-            $signature = $rsa->sign($data);
-
-            echo "RSA签名成功\n<br/>";
-            echo "签名: " . substr($signature, 0, 30) . "...\n<br/>";
-
-            $verified = $rsa->verify($data, $signature);
-            echo "RSA签名验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
-        });
-
-        // 测试6: 文件签名验证
-        $this->runTest('RSA-文件签名验证', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $filePath = $this->testDataDir . '/medium.txt';
-            $signature = $rsa->signFile($filePath);
-
-            echo "RSA文件签名成功\n<br/>";
-
-            $verified = $rsa->verifyFile($filePath, $signature);
-            echo "RSA文件签名验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
-        });
-
-        // 测试7: 密钥导出导入
-        $this->runTest('RSA-密钥导出导入', function() {
-            $original = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $privateKey = $original->exportPrivateKey();
-            $publicKey = $original->exportPublicKey();
-
-            echo "RSA私钥导出成功: " . strlen($privateKey) . " 字节\n<br/>";
-            echo "RSA公钥导出成功: " . strlen($publicKey) . " 字节\n<br/>";
-
-            // 从导出的密钥创建新实例
-            $restored = new RSACrypto($privateKey, $publicKey, 2048, 'sha256', true);
-
-            $testData = "测试RSA密钥导出导入";
-            $signature = $original->sign($testData);
-            $verified = $restored->verify($testData, $signature);
-
-            echo "RSA密钥恢复验证: " . ($verified ? "成功" : "失败") . "\n<br/>";
-
-            return $verified;
-        });
-
-        // 测试8: 加密并签名
-        $this->runTest('RSA-加密并签名', function() {
-            $alice = new RSACrypto(null, null, 2048, 'sha256', true);
-            $bob = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $data = "Alice给Bob的加密消息";
-            $package = $alice->encryptAndSign($data, $bob);
-
-            echo "RSA加密并签名成功\n<br/>";
-            echo "数据包包含: " . implode(', ', array_keys($package)) . "\n<br/>";
-
-            $decrypted = $bob->decryptAndVerify($package, $alice);
-            echo "RSA解密并验证: " . ($data === $decrypted ? "成功" : "失败") . "\n<br/>";
-
-            return $data === $decrypted;
-        });
-
-        // 测试9: 批量文件操作
-        $this->runTest('RSA-批量文件加密', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $files = [
-                $this->testDataDir . '/small.txt',
-                $this->testDataDir . '/medium.txt'
-            ];
-
-            $outputDir = $this->testDataDir . '/rsa_batch_encrypted';
-            if (!is_dir($outputDir)) {
-                mkdir($outputDir, 0755, true);
-            }
-
-            $results = $rsa->encryptFiles($files, $outputDir);
-
-            $successCount = 0;
-            foreach ($results as $file => $result) {
-                echo "RSA文件 {$file}: " . ($result['success'] ? "加密成功" : "加密失败") . "\n<br/>";
-                if ($result['success']) {
-                    $successCount++;
-                }
-            }
-
-            // 清理
-            $this->deleteDirectory($outputDir);
-
-            return $successCount === count($files);
-        });
-
-        // 测试10: 性能测试
-        $this->runTest('RSA-性能测试', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', false);
-
-            $performance = $rsa->testKeyStrength();
-
-            echo "RSA密钥长度: {$performance['key_size']}\n<br/>";
-            echo "加密速度: {$performance['encrypt_speed']}\n<br/>";
-            echo "解密速度: {$performance['decrypt_speed']}\n<br/>";
-            echo "性能评级: {$performance['performance_rating']}\n<br/>";
-
-            return !empty($performance['performance_rating']);
-        });
-
-        // 测试11: 密钥指纹
-        $this->runTest('RSA-密钥指纹', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $fingerprint = $rsa->getKeyFingerprint();
-
-            echo "RSA密钥指纹: {$fingerprint}\n<br/>";
-            echo "指纹长度: " . strlen($fingerprint) . " 字符\n<br/>";
-
-            return !empty($fingerprint) && strlen($fingerprint) === 64;
-        });
-
-        // 测试12: 加密信息摘要
-        $this->runTest('RSA-加密信息摘要', function() {
-            $rsa = new RSACrypto(null, null, 2048, 'sha256', true);
-
-            $info = $rsa->getCipherInfo();
-
-            echo "RSA加密信息:\n<br/>";
-            foreach ($info as $key => $value) {
-                if (is_array($value)) {
-                    echo "  {$key}: [" . implode(', ', $value) . "]\n<br/>";
-                } else {
-                    echo "  {$key}: {$value}\n<br/>";
-                }
-            }
-
-            return !empty($info) && $info['has_private_key'] && $info['has_public_key'];
-        });
-
-        echo "\n<br/>";
     }
 
     /**
-     * 运行单个测试
+     * 单个测试用例
      */
-    private function runTest(string $testName, callable $testFunction): void
+    private function testCase(string $testId, string $description, callable $testFunction): void
     {
-        echo "--- {$testName} ---\n<br/>";
+        $this->totalTests++;
 
         try {
             $result = $testFunction();
-            $this->testResults[$testName] = $result;
-            echo "结果: " . ($result ? "✓ 通过" : "✗ 失败") . "\n<br/>";
+
+            if ($result) {
+                $this->passedTests++;
+                $status = "✓ 通过";
+            } else {
+                $status = "✗ 失败";
+            }
+
+            $this->testResults[] = [
+                'id' => $testId,
+                'description' => $description,
+                'status' => $status,
+                'passed' => $result
+            ];
+
+            echo "{$testId}: {$description} - {$status}\n<br />";
+
         } catch (Exception $e) {
-            $this->testResults[$testName] = false;
-            echo "异常: " . $e->getMessage() . "\n<br/>";
-            echo "结果: ✗ 失败（异常）\n<br/>";
-        }
+            $this->testResults[] = [
+                'id' => $testId,
+                'description' => $description,
+                'status' => "✗ 异常: " . $e->getMessage(),
+                'passed' => false
+            ];
 
-        echo "\n<br/>";
+            echo "{$testId}: {$description} - ✗ 异常: " . $e->getMessage() . "\n<br />";
+        }
     }
 
     /**
-     * 删除目录
+     * 生成测试报告
      */
-    private function deleteDirectory(string $dir): void
+    private function generateTestReport(): void
     {
-        if (!is_dir($dir)) {
-            return;
+        echo "\n<br />========================================\n<br />";
+        echo "测试报告\n<br />";
+        echo "========================================\n<br />\n<br />";
+
+        $passedCount = 0;
+        $failedCount = 0;
+        $errorCount = 0;
+
+        foreach ($this->testResults as $result) {
+            if ($result['passed']) {
+                $passedCount++;
+            } else {
+                if (strpos($result['status'], '异常') !== false) {
+                    $errorCount++;
+                } else {
+                    $failedCount++;
+                }
+            }
         }
 
-        $files = array_diff(scandir($dir), ['.', '..']);
-        foreach ($files as $file) {
-            $path = $dir . '/' . $file;
-            is_dir($path) ? $this->deleteDirectory($path) : unlink($path);
+        echo "测试统计:\n<br />";
+        echo "总测试数: {$this->totalTests}\n<br />";
+        echo "通过: {$passedCount}\n<br />";
+        echo "失败: {$failedCount}\n<br />";
+        echo "异常: {$errorCount}\n<br />";
+        echo "通过率: " . round(($passedCount / $this->totalTests) * 100, 2) . "%\n<br />\n<br />";
+
+        // 显示失败和异常的测试
+        if ($failedCount > 0 || $errorCount > 0) {
+            echo "失败的测试:\n<br />";
+            foreach ($this->testResults as $result) {
+                if (!$result['passed']) {
+                    echo "  {$result['id']}: {$result['description']} - {$result['status']}\n<br />";
+                }
+            }
         }
-        rmdir($dir);
-    }
 
-    /**
-     * 打印测试摘要
-     */
-    private function printTestSummary(): void
-    {
-        echo "=== 测试摘要 ===\n<br/>";
-
-        $totalTests = count($this->testResults);
-        $passedTests = count(array_filter($this->testResults));
-        $failedTests = $totalTests - $passedTests;
-
-        echo "总测试数: {$totalTests}\n<br/>";
-        echo "通过测试: {$passedTests}\n<br/>";
-        echo "失败测试: {$failedTests}\n<br/>";
-        echo "通过率: " . round(($passedTests / $totalTests) * 100, 2) . "%\n<br/>\n<br/>";
-
-        echo "详细结果:\n<br/>";
-        foreach ($this->testResults as $testName => $result) {
-            $status = $result ? "✓ 通过" : "✗ 失败";
-            echo "  {$testName}: {$status}\n<br/>";
-        }
+        echo "\n<br />测试完成!\n<br />";
     }
 }
 
 // 运行测试套件
-try {
-    $testSuite = new CryptoTestSuite();
-    $testSuite->runAllTests();
-} catch (Exception $e) {
-    echo "测试套件运行失败: " . $e->getMessage() . "\n<br/>";
-}
+$testSuite = new CryptoTestSuite();
+$testSuite->runAllTests();
+
