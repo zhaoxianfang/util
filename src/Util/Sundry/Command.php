@@ -11,7 +11,7 @@ use InvalidArgumentException;
  * <?php
  *
  * //实例化
- * $cmd = zxf\Tools\Command::instance();
+ * $cmd = zxf\Util\Sundry\Command::instance();
  *
  * // 获取所有参数值
  * $all = $cmd->all();
@@ -73,9 +73,9 @@ class Command
      */
     protected static $instance;
 
-    protected ?\zxf\Tools\CliInput $cliInput;
+    protected ?\zxf\Util\Sundry\CliInput $cliInput;
 
-    protected ?\zxf\Tools\CliOutput $cliOutput;
+    protected ?\zxf\Util\Sundry\CliOutput $cliOutput;
 
     public function __construct()
     {
@@ -84,10 +84,10 @@ class Command
             exit('Please run under command line.');
         }
         if (class_exists('CliInput')) {
-            $this->cliInput = new \zxf\Tools\CliInput;
+            $this->cliInput = new \zxf\Util\Sundry\CliInput;
         }
         if (class_exists('CliOutput')) {
-            $this->cliOutput = new \zxf\Tools\CliOutput;
+            $this->cliOutput = new \zxf\Util\Sundry\CliOutput;
         }
 
         if (! self::$isParse) {

@@ -1,6 +1,6 @@
 <?php
 
-namespace zxf\Tools;
+namespace zxf\Util\Data;
 
 use zxf\Util\Array\DataArray;
 
