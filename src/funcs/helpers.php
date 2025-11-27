@@ -1334,152 +1334,164 @@ if (! function_exists('relative_path')) {
     }
 }
 
-if (! function_exists('stream_output')) {
+if (!function_exists('stream_output')) {
 
     /**
-     * 数据流 方式操作数据，不用等待操作结束才打印数据
+     * 数据流方式操作数据，不用等待操作结束才打印数据
      *
-     * @param  Closure  $callback  ($next)
-     *                             $next() 执行下一个回调函数
+     * @param Closure $callback ($next)
+     *                      $next() 执行下一个回调函数
+     *                      $next('string') 输出普通文本
+     *                      $next->info('信息消息') 等输出带样式的文本
+     *                      $next->error('错误消息'); // 错误级别输出
+     *                      $next->warning('警告消息'); // 警告级别输出
+     *                      $next->success('成功消息'); // 成功级别输出
      *
-     * @throws Exception
-     *
-     * @example     stream_output(function ($next){
-     *                  // 打印或处理数据
-     *                  $next();
-     *                  $next('这是输出的string');
-     *                  $next->info('这是输出的string');
-     *                  $next->error('这是输出的string');
-     *                  $next->warning('这是输出的string');
-     *                  $next->success('这是输出的string');
-     *              });
+     * @throws Exception|Throwable
      */
     function stream_output(\Closure $callback): void
     {
-        // 防止 CLI 进程被 kill
-        if (PHP_SAPI === 'cli') {
-            pcntl_async_signals(true);
-            pcntl_signal(SIGTERM, function () {
-                echo "进程被终止。\n";
-                exit;
-            });
-        } else {
-            if (headers_sent()) {
-                throw new \Exception('在调用「'.__FUNCTION__.'」函数前，已经发送了HTTP的响应，请删除之前的HTTP响应或者在发送HTTP响应之前添加“ob_start();”代码才能继续运行');
+        static $initialized = false;
+        $isCli = PHP_SAPI === 'cli';
+
+        if (!$initialized) {
+            $initialized = true;
+
+            if ($isCli) {
+                // CLI 信号处理
+                if (function_exists('pcntl_async_signals') && function_exists('pcntl_signal')) {
+                    pcntl_async_signals(true);
+                    pcntl_signal(SIGTERM, function () {
+                        echo "进程被终止。\n";
+                        exit;
+                    });
+                }
+            } else {
+                // 移除 headers_sent 检查，允许之前有输出
+
+                // Web 环境设置
+                ini_set('max_execution_time', '0');
+                set_time_limit(0);
+                ignore_user_abort(true);
+
+                // 设置HTTP响应头（如果还没有发送header）
+                if (!headers_sent()) {
+                    header('Content-Type: text/html; charset=UTF-8');
+                    header('Cache-Control: no-cache, no-store, must-revalidate');
+                    header('Pragma: no-cache');
+                    header('Expires: 0');
+                    header('Connection: keep-alive');
+                    header('X-Accel-Buffering: no');
+
+                    if (function_exists('apache_setenv')) {
+                        @apache_setenv('no-gzip', '1');
+                    }
+                }
             }
 
-            // 取消 PHP 超时限制
-            ini_set('max_execution_time', 0);
-            set_time_limit(0);
-            // 允许即使用户断开连接，PHP 仍然运行
-            ignore_user_abort(true);
-
-            // 重新设置 Header
-            // 如果使用的是 Apache 或 Nginx，设置适当的头部信息以避免服务器端缓冲
-            header('Content-Type: text/html; charset=UTF-8');
-            header('Cache-Control: no-cache');
-            header('Connection: keep-alive');
-            header('X-Accel-Buffering: no'); // 禁用 nginx 的输出缓冲
+            // 清除当前输出缓冲区，但不影响之前的输出
+            if (ob_get_level() > 0) {
+                ob_end_flush();
+            }
+            ob_implicit_flush(true);
         }
 
-        // 关闭 PHP 的输出缓冲
-        while (ob_get_level() > 0) {
-            ob_end_flush();
-        }
-        ob_implicit_flush(true); // 每次输出都自动刷新
-
-        // 方式一：最简实现
-        // $next = function (string ...$outputString) {
-        //    // 换行符号
-        //    $break = (PHP_SAPI === 'cli') ? PHP_EOL : '<br>';
-        //    foreach ($outputString as $output) {
-        //        echo $output . $break;
-        //    }
-        //    // 强制刷新输出缓冲区
-        //    flush();
-        // };
-
-        // 方式二：支持通过 $next->info('hello','hello 2') 等样式调用
-        $next = new class
+        // 创建输出处理器
+        $next = new class($isCli)
         {
-            private bool $isCli = false;
+            private bool $isCli;
+            private bool $supportsColors;
+            private string $lineBreak;
 
-            public function __construct()
+            // 颜色映射配置
+            private const COLOR_MAP = [
+                'info'    => ['cli' => "\033[36m", 'browser' => '#0099CC', 'prefix' => '[INFO] '],
+                'error'   => ['cli' => "\033[31m", 'browser' => '#FF3300', 'prefix' => '[ERROR] '],
+                'warning' => ['cli' => "\033[33m", 'browser' => '#FF9900', 'prefix' => '[WARNING] '],
+                'success' => ['cli' => "\033[32m", 'browser' => '#009900', 'prefix' => '[SUCCESS] '],
+                'default' => ['cli' => "\033[37m", 'browser' => '#666666', 'prefix' => '[LOG] ']
+            ];
+
+            public function __construct(bool $isCli)
             {
-                $this->isCli = PHP_SAPI === 'cli';
+                $this->isCli = $isCli;
+                $this->lineBreak = $isCli ? PHP_EOL : '<br>';
+                $this->supportsColors = $this->checkColorSupport();
             }
 
-            // 支持直接调用 $next('hello')
-            public function __invoke(string ...$string): void
+            public function __invoke(string ...$strings): void
             {
-                foreach ($string as $text) {
-                    $this->isCli && $this->cliPrintColorText($text, "\033[37m", "\033[0m", true);
-                    $this->isCli || $this->browserPrintColorText($text, $color = '#000', true);
+                $this->output($strings);
+            }
+
+            public function __call(string $name, array $args): void
+            {
+                $this->output($args, $name);
+            }
+
+            private function output(array $texts, ?string $type = null): void
+            {
+                if (empty($texts)) {
+                    $this->flush();
+                    return;
                 }
-                // 强制刷新输出缓冲区
+
+                $colorMap = self::COLOR_MAP[$type] ?? self::COLOR_MAP['default'];
+
+                foreach ($texts as $text) {
+                    if ($this->isCli) {
+                        echo $this->supportsColors ? $colorMap['cli'] . $text . "\033[0m" : $colorMap['prefix'] . $text;
+                        echo $this->lineBreak;
+                    } else {
+                        echo '<span style="color: ' . $colorMap['browser'] . '; font-weight: bold;">' .
+                            htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8') .
+                            '</span>' . $this->lineBreak;
+                    }
+                }
+
+                $this->flush();
+            }
+
+            private function checkColorSupport(): bool
+            {
+                if (!$this->isCli) return false;
+
+                if (DIRECTORY_SEPARATOR === '\\') {
+                    return getenv('ANSICON') !== false || getenv('ConEmuANSI') === 'ON' || getenv('TERM') === 'xterm'
+                        || (function_exists('sapi_windows_vt100_support') && @sapi_windows_vt100_support(STDOUT));
+                }
+
+                if (function_exists('posix_isatty') && @posix_isatty(STDOUT)) {
+                    return true;
+                }
+
+                $term = getenv('TERM');
+                return $term !== false && (stripos($term, 'color') !== false || stripos($term, 'xterm') !== false || stripos($term, 'vt100') !== false);
+            }
+
+            public function flush(): void
+            {
+                if (ob_get_level() > 0){
+                    ob_flush();
+                }
                 flush();
-            }
-
-            // 支持通过 $next->info('hello','hello 2') 调用
-            public function __call(string $name, array $args)
-            {
-                $cliColor = match ($name) {
-                    'info' => "\033[37m", // \033[37m:亮灰色; \033[90m:亮黑色(灰色)
-                    'error' => "\033[31m", // 红色
-                    'warning' => "\033[33m", // 黄色
-                    'success' => "\033[32m", // 绿色
-                    default => "\033[90m", // \033[37m:亮灰色; \033[90m:亮黑色(灰色)
-                };
-                $color = match ($name) {
-                    'info' => '#000', // 黑色
-                    'error' => '#FF3300', // 红色
-                    'warning' => '#FFCC00', // 黄色
-                    'success' => '#009900', // 绿色
-                    default => '#3366FF', // 蓝色
-                };
-
-                foreach ($args as $text) {
-                    $this->isCli && $this->cliPrintColorText($text, $cliColor, "\033[0m", true);
-                    $this->isCli || $this->browserPrintColorText($text, $color, true);
-                }
-                // 强制刷新输出缓冲区
-                flush();
-            }
-
-            /**
-             * cli 打印带有颜色和样式的文本。
-             *
-             * @param  string  $text  要打印的文本。
-             * @param  string  $color  颜色代码。
-             * @param  string  $style  样式代码，默认为重置样式。
-             * @param  bool  $needWrap  是否需要换行
-             */
-            public function cliPrintColorText(string $text, string $color, string $style = "\033[0m", bool $needWrap = false): void
-            {
-                echo $style.$color.$text."\033[0m";
-                if ($needWrap) {
-                    echo "\n";
-                }
-            }
-
-            /**
-             * browser 打印带有颜色的文本。
-             *
-             * @param  string  $text  要打印的文本。
-             * @param  string  $color  颜色代码。
-             * @param  bool  $needWrap  是否需要换行
-             */
-            public function browserPrintColorText(string $text, string $color = '#c0c0c0', bool $needWrap = false): void
-            {
-                echo '<span style="color: '.$color.';">'.$text.'</span>';
-                if ($needWrap) {
-                    echo '<br>';
+                if (function_exists('usleep') && $this->isCli){
+                    usleep(1000);
                 }
             }
         };
-        $callback && $callback($next);
-        // 强制刷新输出缓冲区
-        flush();
+
+        try {
+            $callback($next);
+            $next->flush();
+        } catch (\Throwable $e) {
+            $message = $isCli ? "错误: " . $e->getMessage() . PHP_EOL : '<span style="color: #FF3300; font-weight: bold;">错误: ' .
+                htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML5, 'UTF-8') . '</span><br>';
+
+            echo $message;
+            $next->flush();
+            throw $e;
+        }
     }
 }
 
