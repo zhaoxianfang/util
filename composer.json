@@ -1,8 +1,8 @@
 {
-  "name": "zxf/util",
+  "name": "zxf/utils",
   "description": "无业务逻辑的通用工具包和通用函数集",
   "type": "library",
-  "keywords": ["util", "func", "zxf" ,"php", "工具"],
+  "keywords": ["utils", "func", "zxf" ,"php", "工具"],
   "license": "MIT",
   "authors": [
     {
