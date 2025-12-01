@@ -240,7 +240,7 @@ class Douyin extends Gateway
     /**
      * Description:  解析access_token方法请求后的返回值
      *
-     * @param string $token 获取access_token的方法的返回值
+     * @param $data
      * @return mixed
      * @throws OAuthException
      */

@@ -2,6 +2,9 @@
 
 namespace zxf\Utils\Data;
 
+use Closure;
+use InvalidArgumentException;
+
 /**
  * 树形结构工具类
  * 用于将一维数组转换为树形结构
@@ -506,7 +509,7 @@ class Tree
         }
 
         // 闭包形式处理
-        if ($args[0] instanceof \Closure) {
+        if ($args[0] instanceof Closure) {
             $this->data = array_filter($this->data, $args[0]);
 
             return $this;
@@ -626,7 +629,7 @@ class Tree
      * @param  array  $range  范围数组[min, max]
      * @return $this
      *
-     * @throws \InvalidArgumentException 当范围参数无效时抛出异常
+     * @throws InvalidArgumentException 当范围参数无效时抛出异常
      *
      * 使用示例:
      * $tree->whereBetween('age', [18, 30]);  // 查询age在18到30之间的记录
@@ -634,7 +637,7 @@ class Tree
     public function whereBetween(string $field, array $range): self
     {
         if (count($range) !== 2) {
-            throw new \InvalidArgumentException('BETWEEN条件需要包含最小值和最大值的数组');
+            throw new InvalidArgumentException('BETWEEN条件需要包含最小值和最大值的数组');
         }
 
         $this->data = array_filter($this->data,
@@ -653,7 +656,7 @@ class Tree
      * @param  array  $range  范围数组[min, max]
      * @return $this
      *
-     * @throws \InvalidArgumentException 当范围参数无效时抛出异常
+     * @throws InvalidArgumentException 当范围参数无效时抛出异常
      *
      * 使用示例:
      * $tree->whereNotBetween('score', [60, 80]);  // 查询score不在60到80之间的记录
@@ -661,7 +664,7 @@ class Tree
     public function whereNotBetween(string $field, array $range): self
     {
         if (count($range) !== 2) {
-            throw new \InvalidArgumentException('NOT BETWEEN条件需要包含最小值和最大值的数组');
+            throw new InvalidArgumentException('NOT BETWEEN条件需要包含最小值和最大值的数组');
         }
 
         $this->data = array_filter($this->data,
@@ -709,7 +712,7 @@ class Tree
      * @param  mixed  $condition  条件参数
      * @return bool 返回是否匹配
      *
-     * @throws \InvalidArgumentException 当操作符不支持时抛出异常
+     * @throws InvalidArgumentException 当操作符不支持时抛出异常
      */
     private function compareCondition(array $item, mixed $condition): bool
     {
@@ -762,7 +765,7 @@ class Tree
             'ends with' => str_ends_with((string) $fieldValue, (string) $value),
 
             // 默认抛出异常
-            default => throw new \InvalidArgumentException("不支持的操作符: {$operator}"),
+            default => throw new InvalidArgumentException("不支持的操作符: {$operator}"),
         };
     }
 

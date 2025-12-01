@@ -95,48 +95,48 @@ public function getUserInfo();
 ### 国内平台 (Domestic Platforms)
 
 
-|Gateways|LoginName|LoginMethod|
-|:-:|:-:|:-:|
-|qq|腾讯QQ|PC扫码、APP|
-|wechat|微信|PC、公众号、小程序、APP|
-|wecom|企业微信|PC、APP|
-|sina|新浪微博|PC、APP|
-|alipay|支付宝|PC、APP|
-|aliyun|阿里云|PC|
-|baidu|百度|PC|
-|douyin|抖音|PC、APP|
-|toutiao|头条|PC、APP|
-|xigua|西瓜视频|PC、APP|
-|dingtalk|钉钉|PC、APP|
-|xiaomi|小米|PC、APP|
-|huawei|华为|PC、APP|
+| Gateways | LoginName |  LoginMethod   |
+|:--------:|:---------:|:--------------:|
+|    qq    |   腾讯QQ    |    PC扫码、APP    |
+|  wechat  |    微信     | PC、公众号、小程序、APP |
+|  wecom   |   企业微信    |     PC、APP     |
+|   sina   |   新浪微博    |     PC、APP     |
+|  alipay  |    支付宝    |     PC、APP     |
+|  aliyun  |    阿里云    |       PC       |
+|  baidu   |    百度     |       PC       |
+|  douyin  |    抖音     |     PC、APP     |
+| toutiao  |    头条     |     PC、APP     |
+|  xigua   |   西瓜视频    |     PC、APP     |
+| dingtalk |    钉钉     |     PC、APP     |
+|  xiaomi  |    小米     |     PC、APP     |
+|  huawei  |    华为     |     PC、APP     |
 
 ### 开发平台 (Development Platforms)
 
 
-|Gateways|LoginName|LoginMethod|
-|:-:|:-:|:-:|
-|github|GitHub|PC|
-|gitlab|GitLab|PC|
-|gitee|Gitee|PC|
-|coding|Coding|PC|
-|oschina|OSChina|PC|
-|csdn|CSDN|PC|
+| Gateways | LoginName | LoginMethod |
+|:--------:|:---------:|:-----------:|
+|  github  |  GitHub   |     PC      |
+|  gitlab  |  GitLab   |     PC      |
+|  gitee   |   Gitee   |     PC      |
+|  coding  |  Coding   |     PC      |
+| oschina  |  OSChina  |     PC      |
+|   csdn   |   CSDN    |     PC      |
 
 ### 国际平台 (International Platforms)
 
 
-|Gateways|LoginName|LoginMethod|
-|:-:|:-:|:-:|
-|google|Google|PC|
-|facebook|Facebook|PC|
-|twitter|Twitter|PC|
-|line|Line|PC|
-|naver|Naver|PC|
-|amazon|Amazon|PC|
-|apple|Apple|PC、APP|
-|yahoo|Yahoo|PC|
-|microsoft|Microsoft|PC|
+| Gateways  | LoginName | LoginMethod |
+|:---------:|:---------:|:-----------:|
+|  google   |  Google   |     PC      |
+| facebook  | Facebook  |     PC      |
+|  twitter  |  Twitter  |     PC      |
+|   line    |   Line    |     PC      |
+|   naver   |   Naver   |     PC      |
+|  amazon   |  Amazon   |     PC      |
+|   apple   |   Apple   |   PC、APP    |
+|   yahoo   |   Yahoo   |     PC      |
+| microsoft | Microsoft |     PC      |
 
 >注意事项 (Notes)：
 1. Google、Facebook、Twitter 等国际平台需要使用海外或香港服务器才能正常回调

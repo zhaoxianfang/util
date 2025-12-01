@@ -13,6 +13,8 @@
  */
 namespace zxf\Utils\OAuth2\Gateways;
 
+use Exception;
+use InvalidArgumentException;
 use zxf\Utils\OAuth2\Connector\Gateway;
 use zxf\Utils\OAuth2\Exception\OAuthException;
 use zxf\Utils\OAuth2\Helper\ConstCode;
@@ -230,11 +232,11 @@ class Wechat extends Gateway
     {
         if (24 != strlen($sessionKey))
         {
-            throw new \InvalidArgumentException('sessionKey 格式错误');
+            throw new InvalidArgumentException('sessionKey 格式错误');
         }
         if (24 != strlen($iv))
         {
-            throw new \InvalidArgumentException('iv 格式错误');
+            throw new InvalidArgumentException('iv 格式错误');
         }
         $aesKey = base64_decode($sessionKey);
         $aesIV = base64_decode($iv);
@@ -242,12 +244,12 @@ class Wechat extends Gateway
         $result = openssl_decrypt($aesCipher, 'AES-128-CBC', $aesKey, 1, $aesIV);
         if (!$result)
         {
-            throw new \InvalidArgumentException('解密失败');
+            throw new InvalidArgumentException('解密失败');
         }
         $dataObj = json_decode($result, true);
         if (!$dataObj)
         {
-            throw new \InvalidArgumentException('反序列化数据失败');
+            throw new InvalidArgumentException('反序列化数据失败');
         }
 
         return $dataObj;
@@ -293,7 +295,7 @@ class Wechat extends Gateway
             $result = $this->get(self::API_BASE . 'auth', $params);
             $result = json_decode($result, true);
             return isset($result['errcode']) && $result['errcode'] == 0;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

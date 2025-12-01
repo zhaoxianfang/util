@@ -2,6 +2,11 @@
 
 namespace zxf\Utils\Data;
 
+use DivisionByZeroError;
+use Exception;
+use InvalidArgumentException;
+use OverflowException;
+
 /**
  * BigNumberCalculator - 超高精度大数计算器
  *

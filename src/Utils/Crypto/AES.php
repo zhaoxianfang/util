@@ -646,7 +646,7 @@ class AES
         $this->updatePerformanceStats('decryption', strlen($encryptedData));
 
         // 检查是否为分块加密数据
-        if (strpos($encryptedData, '|') !== false && !$this->isAuthenticatedMode()) {
+        if (str_contains($encryptedData, '|') && !$this->isAuthenticatedMode()) {
             $this->logDebug("检测到分块加密数据");
             return $this->decryptChunked($encryptedData, $options, $additionalData);
         }

@@ -47,7 +47,7 @@ if (! function_exists('uuid')) {
                 } while ($relative_microtime === $last_microtime && $retryCount < 3);
 
                 if ($relative_microtime === $last_microtime) {
-                    throw new \RuntimeException('UUID sequence overflow after retries');
+                    throw new RuntimeException('UUID sequence overflow after retries');
                 }
             }
         } else {
@@ -297,41 +297,30 @@ if (! function_exists('img_to_gray')) {
     function img_to_gray(string $imgFile = '', string $saveFile = '', int $quality = 90): bool
     {
         if (! $imgFile || ! file_exists($imgFile)) {
-            throw new \InvalidArgumentException('图片文件不存在或路径错误');
+            throw new InvalidArgumentException('图片文件不存在或路径错误');
         }
 
         // 获取图片信息
         $imageInfo = @getimagesize($imgFile);
         if ($imageInfo === false) {
-            throw new \RuntimeException('无法读取图片信息');
+            throw new RuntimeException('无法读取图片信息');
         }
 
         $mimeType = $imageInfo['mime'];
         $extension = pathinfo($imgFile, PATHINFO_EXTENSION);
 
         // 根据 MIME 类型创建图片资源
-        switch ($mimeType) {
-            case 'image/jpeg':
-                $image = imagecreatefromjpeg($imgFile);
-                break;
-            case 'image/png':
-                $image = imagecreatefrompng($imgFile);
-                break;
-            case 'image/gif':
-                $image = imagecreatefromgif($imgFile);
-                break;
-            case 'image/webp':
-                $image = imagecreatefromwebp($imgFile);
-                break;
-            case 'image/bmp':
-                $image = imagecreatefrombmp($imgFile);
-                break;
-            default:
-                throw new \RuntimeException("不支持的图片格式: {$mimeType}");
-        }
+        $image = match ($mimeType) {
+            'image/jpeg' => imagecreatefromjpeg($imgFile),
+            'image/png' => imagecreatefrompng($imgFile),
+            'image/gif' => imagecreatefromgif($imgFile),
+            'image/webp' => imagecreatefromwebp($imgFile),
+            'image/bmp' => imagecreatefrombmp($imgFile),
+            default => throw new RuntimeException("不支持的图片格式: {$mimeType}"),
+        };
 
         if ($image === false) {
-            throw new \RuntimeException('创建图片资源失败');
+            throw new RuntimeException('创建图片资源失败');
         }
 
         try {
@@ -346,7 +335,7 @@ if (! function_exists('img_to_gray')) {
 
             // 应用灰度滤镜
             if (! imagefilter($image, IMG_FILTER_GRAYSCALE)) {
-                throw new \RuntimeException('应用灰度滤镜失败');
+                throw new RuntimeException('应用灰度滤镜失败');
             }
 
             // 可选：调整亮度
@@ -376,48 +365,30 @@ if (! function_exists('img_to_gray')) {
                         break;
                     default:
                         // 默认使用原格式
-                        switch ($mimeType) {
-                            case 'image/jpeg':
-                                $success = imagejpeg($image, $saveFile, $quality);
-                                break;
-                            case 'image/png':
-                                $success = imagepng($image, $saveFile, (int)($quality / 10));
-                                break;
-                            case 'image/gif':
-                                $success = imagegif($image, $saveFile);
-                                break;
-                            case 'image/webp':
-                                $success = imagewebp($image, $saveFile, $quality);
-                                break;
-                            default:
-                                $success = imagejpeg($image, $saveFile, $quality);
-                        }
+                        $success = match ($mimeType) {
+                            'image/jpeg' => imagejpeg($image, $saveFile, $quality),
+                            'image/png' => imagepng($image, $saveFile, (int)($quality / 10)),
+                            'image/gif' => imagegif($image, $saveFile),
+                            'image/webp' => imagewebp($image, $saveFile, $quality),
+                            default => imagejpeg($image, $saveFile, $quality),
+                        };
                 }
             } else {
                 // 直接输出到浏览器
                 header('Content-Type: ' . $mimeType);
-                switch ($mimeType) {
-                    case 'image/jpeg':
-                        $success = imagejpeg($image, null, $quality);
-                        break;
-                    case 'image/png':
-                        $success = imagepng($image, null, (int)($quality / 10));
-                        break;
-                    case 'image/gif':
-                        $success = imagegif($image);
-                        break;
-                    case 'image/webp':
-                        $success = imagewebp($image, null, $quality);
-                        break;
-                    default:
-                        $success = imagejpeg($image, null, $quality);
-                }
+                $success = match ($mimeType) {
+                    'image/jpeg' => imagejpeg($image, null, $quality),
+                    'image/png' => imagepng($image, null, (int)($quality / 10)),
+                    'image/gif' => imagegif($image),
+                    'image/webp' => imagewebp($image, null, $quality),
+                    default => imagejpeg($image, null, $quality),
+                };
             }
 
             imagedestroy($image);
             return $success;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             if (isset($image) && is_resource($image)) {
                 imagedestroy($image);
             }
@@ -436,11 +407,11 @@ if (! function_exists('get_filesize')) {
     function get_filesize(string $filePath): string
     {
         if (! file_exists($filePath)) {
-            throw new \InvalidArgumentException("文件不存在: {$filePath}");
+            throw new InvalidArgumentException("文件不存在: {$filePath}");
         }
 
         if (! is_file($filePath)) {
-            throw new \InvalidArgumentException("路径不是文件: {$filePath}");
+            throw new InvalidArgumentException("路径不是文件: {$filePath}");
         }
 
         $size = stat($filePath)['size'];
@@ -465,7 +436,7 @@ if (! function_exists('byteFormat')) {
     function byteFormat(int $size, int $dec = 2, bool $binary = false): string
     {
         if ($size < 0) {
-            throw new \InvalidArgumentException('文件大小不能为负数');
+            throw new InvalidArgumentException('文件大小不能为负数');
         }
 
         if ($size === 0) {
@@ -728,7 +699,7 @@ if (! function_exists('is_json')) {
             if ((! empty($data) && is_object($data)) || (is_array($data) && ! empty($data))) {
                 return true;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return false;
@@ -751,7 +722,7 @@ if (! function_exists('is_xml')) {
             }
 
             return true; // 如果没有错误，返回 true
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
 
         return false;
@@ -982,7 +953,7 @@ if (! function_exists('set_protected_value')) {
         $reflectionClass = new ReflectionClass($obj);
         try {
             $reflectionClass->setStaticPropertyValue($filed, $value);
-        } catch (\Exception $err) {
+        } catch (Exception $err) {
             $reflectionProperty = $reflectionClass->getProperty($filed);
             $reflectionProperty->setAccessible(true);
             $reflectionProperty->setValue($obj, $value);
@@ -1011,7 +982,7 @@ if (! function_exists('json_decode_plus')) {
             return $assoc ? [] : null;
         }
 
-        if (is_array($json) || (is_object($json) && !$json instanceof \JsonSerializable)) {
+        if (is_array($json) || (is_object($json) && !$json instanceof JsonSerializable)) {
             return $json;
         }
 
@@ -1022,18 +993,18 @@ if (! function_exists('json_decode_plus')) {
 
         // 检查字符串长度
         if (strlen($jsonString) > 1000000) { // 1MB限制
-            throw new \RuntimeException('JSON字符串过长');
+            throw new RuntimeException('JSON字符串过长');
         }
 
         try {
             return json_decode($jsonString, $assoc, $depth, $flags);
-        } catch (\JsonException $e) {
+        } catch (Exception $e) {
             // 尝试修复常见的JSON格式问题
             $cleaned = repairJson($jsonString);
 
             try {
                 return json_decode($cleaned, $assoc, $depth, $flags);
-            } catch (\JsonException $e) {
+            } catch (Exception $e) {
                 // 记录错误日志
                 error_log("JSON解码失败: " . $e->getMessage() . " | 原始数据: " . substr($jsonString, 0, 200));
 
@@ -1272,7 +1243,7 @@ if (! function_exists('before_calling_methods')) {
                     if (empty($paramName) || (call_user_func('is_'.$paramName, $paramsArgs[$index]))) {
                         return $paramsArgs[$index];
                     }
-                    throw new \Exception("第{$argIndex}个参数的类型不是指定的「{$paramName}」类型");
+                    throw new Exception("第{$argIndex}个参数的类型不是指定的「{$paramName}」类型");
                 }
                 // 检查是否有默认值
                 if ($parameter->isDefaultValueAvailable()) {
@@ -1280,7 +1251,7 @@ if (! function_exists('before_calling_methods')) {
                     return $parameter->getDefaultValue();
                 }
                 // 没有默认参数的普通参数
-                throw new \Exception("第{$argIndex}个参数「\${$parameter->getName()}」不能为空");
+                throw new Exception("第{$argIndex}个参数「\${$parameter->getName()}」不能为空");
             }, $reflectionMethod->getParameters());
 
             // 2、 解析依赖注入对象
@@ -1296,7 +1267,7 @@ if (! function_exists('before_calling_methods')) {
 
             // 3、 通过反射 $method 方法并传入解析后的依赖注入对象或普通参数
             $reflectionMethod->invokeArgs($class, $resolvedDependencies);
-        } catch (\ReflectionException $e) {
+        } catch (ReflectionException $e) {
             return;
         }
     }
@@ -1369,7 +1340,7 @@ if (!function_exists('stream_output')) {
      *
      * @throws Exception|Throwable
      */
-    function stream_output(\Closure $callback): void
+    function stream_output(Closure $callback): void
     {
         static $initialized = false; // 静态标记是否已初始化
         $isCli = PHP_SAPI === 'cli'; // 检测运行环境
@@ -1517,7 +1488,7 @@ if (!function_exists('stream_output')) {
         try {
             $callback($next); // 执行用户回调
             $next->flush(); // 最终刷新
-        } catch (\Throwable $e) { // 异常处理
+        } catch (Throwable $e) { // 异常处理
             $message = $next::formatData($e->getMessage()); // 使用静态方法格式化错误信息
             if ($isCli) { // CLI错误输出
                 echo "错误: " . $message . PHP_EOL;
@@ -1593,8 +1564,8 @@ if (! function_exists('array_get')) {
      *
      * @return mixed 查询到的值或默认值
      *
-     * @throws \InvalidArgumentException 当输入参数无效时抛出
-     * @throws \RuntimeException 当查询语法错误时抛出
+     * @throws InvalidArgumentException 当输入参数无效时抛出
+     * @throws RuntimeException 当查询语法错误时抛出
      */
     function array_get(array $array, string $path, mixed $default = null, string $delimiter = '.'): mixed
     {
@@ -1604,7 +1575,7 @@ if (! function_exists('array_get')) {
 
         if (str_contains($delimiter, '*') || str_contains($delimiter, '?') ||
             str_contains($delimiter, '{') || str_contains($delimiter, '}')) {
-            throw new \InvalidArgumentException('Delimiter cannot contain special characters');
+            throw new InvalidArgumentException('Delimiter cannot contain special characters');
         }
 
         $parts = explode($delimiter, $path);
@@ -1719,9 +1690,9 @@ if (! function_exists('array_get')) {
                 }
 
                 $values = [];
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveArrayIterator($result),
-                    \RecursiveIteratorIterator::SELF_FIRST
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveArrayIterator($result),
+                    RecursiveIteratorIterator::SELF_FIRST
                 );
 
                 foreach ($iterator as $key => $value) {
@@ -1889,7 +1860,7 @@ if (! function_exists('base64_to_image')) {
             $new_file = $path.'/'.date('Ymd', time()).'/';
             if (! file_exists($new_file)) {
                 // 检查是否有该文件夹，如果没有就创建，并给予最高权限
-                create_dir($new_file);
+                create_dir_or_filepath($new_file);
             }
             $new_file = $new_file.md5(time().mt_rand(1, 1000000)).".{$type}";
             if (file_put_contents($new_file, base64_decode(str_replace($result[1], '', $base64_image_content)))) {
@@ -1945,5 +1916,149 @@ if (! function_exists('is_laravel')) {
         return defined('LARAVEL_START') ||
             class_exists(\Illuminate\Foundation\Application::class) ||
             function_exists('app') && app() instanceof \Illuminate\Contracts\Foundation\Application;
+    }
+}
+
+if (! function_exists('create_dir_or_filepath')) {
+    /**
+     * 创建文件夹或文件
+     *
+     * @param  string  $path  文件夹或者文件路径
+     */
+    function create_dir_or_filepath(string $path = '', int $permissions = 0755): bool
+    {
+        // 如果路径不存在，则尝试创建它
+        if (! file_exists($path)) {
+            // 创建目录（如果不存在）
+            $dir = dirname($path);
+            if (! is_dir($dir) && ! mkdir($dir, $permissions, true) && ! is_dir($dir)) {
+                // 创建文件夹失败
+                return false;
+            }
+            // 如果不是现有目录，则尝试创建文件
+            if (! is_dir($path) && ! touch($path)) {
+                // 创建文件失败
+                return false;
+            }
+        }
+
+        // 路径已存在或成功创建
+        return true;
+    }
+}
+
+if (! function_exists('obj2Arr')) {
+    /**
+     * 对象转数组
+     *
+     *
+     * @return array|mixed
+     */
+    function obj2Arr($array): mixed
+    {
+        if (is_object($array)) {
+            $array = (array) $array;
+        }
+        if (is_array($array)) {
+            foreach ($array as $key => $value) {
+                $array[$key] = obj2Arr($value);
+            }
+        }
+
+        return $array;
+    }
+}
+
+
+if (! function_exists('url_conversion')) {
+    /**
+     * 把 ./ 和 ../ 开头的资源地址转换为绝对地址
+     *
+     * @param  string  $string  需要转换的字符串
+     * @param  string  $prefixString  拼接的前缀字符
+     * @param  array  $linkAttr  需要转换的标签属性，例如：href、src、durl
+     */
+    function url_conversion(string $string = '', string $prefixString = '', array $linkAttr = ['href', 'src']): string
+    {
+        if (empty($string) || empty($prefixString)) {
+            return $string;
+        }
+        // 判断$string是否是 / 、./ 或者 ../ 开头的url字符串
+        if (mb_substr($string, 0, 1, 'utf-8') == '/' || mb_substr($string, 0, 2, 'utf-8') == './' || mb_substr($string, 0, 3, 'utf-8') == '../') {
+            return url_conversion_to_prefix_path($string, $prefixString);
+        }
+        $linkAttrString = implode('|', $linkAttr); // 数组转为字符串 用 (竖线)`|` 分割，例如：href|src|durl
+        // 正则查找 $linkAttr 属性中 以 ./、../、/ 和文件夹名称开头的图片或超链接的相对路径 URL 地址字符串,要求src、href等前面至少带一个空格，避免操作 src 和 oldsrc 都识别到src的情况
+        // $pattern = '/\s+(href|src)\s*=\s*"(?:\.\/|\.\.|\/)?([^"|^\']+)"/';
+        $pattern = '/\s+('.$linkAttrString.')\s*=\s*"(?:\.\/|\.\.|\/)?([^"|^\']+)"/';
+        preg_match_all($pattern, $string, $matches);
+
+        $relativeURLs = $matches[0];
+        $originalPath = []; // 原始的相对路径数组
+        $replacePath = []; // 替换成的前缀路径数组
+        $plusReplacePath = []; // 加强版替换路径数组
+        foreach ($relativeURLs as $findStr) {
+            // 删除 $findStr 字符串中的 href= 或者 src= durl= 字符串
+            $findStr = preg_replace('/\s+('.$linkAttrString.')\s*=\s*["\']/i', '', $findStr);
+            $originalPath[] = $findStr;
+            $replacePath[] = url_conversion_to_prefix_path($findStr, $prefixString);
+        }
+        if (! empty($originalPath) && ! empty($replacePath)) {
+            // 批量替换地址;直接在此处替换会导致 出现相同的'link'字符串时候会被替换多次，导致出现错误的结果
+            // $string = str_replace($originalPath, $replacePath, $string);
+
+            // 加强版开始开始表演：找出 'link' 相关字符串的前缀(例如src、href等)最为批量替换的前缀，防止被多次替换
+            // 强化前缀字符串
+            $strengthenAttr = $matches[1];
+            foreach ($originalPath as $index => $item) {
+                // 判断最后一个引号是单引号还是双引号
+                $lastQuotationMark = substr($relativeURLs[$index], -1);
+                // 把替换结果拼上 $linkAttr 对应的前缀，例如 ` src="` 或者 ` href="等
+                $plusReplacePath[$index] = ' '.$strengthenAttr[$index].'='.$lastQuotationMark.$replacePath[$index];
+            }
+            // 批量替换地址
+            $string = str_replace($relativeURLs, $plusReplacePath, $string);
+        }
+
+        return $string;
+    }
+}
+
+if (! function_exists('url_conversion_to_prefix_path')) {
+    /**
+     * 把 $url 中的 相对路径 转换为$prefix前缀路径, 建议调用 url_conversion() 方法
+     */
+    function url_conversion_to_prefix_path(string $url = '', string $prefix = ''): string
+    {
+        if (empty($url) || empty($prefix)) {
+            return $url;
+        }
+        if (mb_substr($url, 0, 4, 'utf-8') != 'http') {
+            // 用 / 把 $prefix  拆分为数组
+            $domain_prefix_arr = explode('/', trim($prefix, '/'));
+            if (mb_substr($url, 0, 1, 'utf-8') == '/') {
+                // 处理 / 开头的路径
+                if (mb_substr($prefix, 0, 4, 'utf-8') == 'http') {
+                    // 解析URL
+                    $urlInfo = parse_url($prefix);
+                    $domain = $urlInfo['scheme'].'://'.$urlInfo['host'].(! empty($urlInfo['port']) ? ':'.$urlInfo['port'] : '');
+
+                    return $domain.$url;
+                } else {
+                    return $domain_prefix_arr[0].$url;
+                }
+            }
+            // 查找 $url 字符串中出现了几次 ../ ,例如：../../ ,不要查找 ./ ，因为 ./ 表示0次
+            $count = mb_substr_count($url, '../', 'utf-8');
+            // 从 $domain_prefix_arr 中删除 $count 个元素
+            $count > 0 && array_splice($domain_prefix_arr, -$count);
+            // 用 / 把 $domain_prefix_arr  拼接为字符串
+            $prefix = implode('/', $domain_prefix_arr);
+            // 去掉 $url 字符串中的 ../ 和 ./
+            $url = str_replace(['../', './'], '', $url);
+            $url = rtrim($prefix, '/').'/'.ltrim($url, '/');
+        }
+
+        return $url;
     }
 }

@@ -5,6 +5,7 @@ namespace zxf\Utils\Xml;
 use DOMDocument;
 use DOMElement;
 use DOMException;
+use Exception;
 use InvalidArgumentException;
 
 /**
@@ -97,7 +98,7 @@ class Array2XML
 
             // 设置空白字符处理
             $this->document->preserveWhiteSpace = $this->config['preserveWhiteSpace'];
-        } catch (DOMException $e) {
+        } catch (Exception $e) {
             throw new InvalidArgumentException('DOM文档初始化失败: '.$e->getMessage());
         }
     }
@@ -129,7 +130,7 @@ class Array2XML
 
             // 将根元素添加到文档
             $this->document->appendChild($root);
-        } catch (DOMException $e) {
+        } catch (Exception $e) {
             throw new InvalidArgumentException('根元素创建失败: '.$e->getMessage());
         }
     }
@@ -157,7 +158,7 @@ class Array2XML
             try {
                 // 设置命名空间属性
                 $element->setAttribute($attrName, $uri);
-            } catch (DOMException $e) {
+            } catch (Exception $e) {
                 // 在严格模式下抛出异常，否则跳过
                 if ($this->config['strictMode']) {
                     throw new InvalidArgumentException("命名空间声明失败: {$attrName}={$uri}");
@@ -286,7 +287,7 @@ class Array2XML
                 } else {
                     $element->setAttribute($normalizedAttrName, $strValue);
                 }
-            } catch (DOMException $e) {
+            } catch (Exception $e) {
                 // 严格模式下抛出异常
                 if ($this->config['strictMode']) {
                     throw new InvalidArgumentException("属性设置失败: {$normalizedAttrName}={$strValue}");
@@ -387,7 +388,7 @@ class Array2XML
                 else {
                     $element->appendChild($this->createElement($keyStr, $value));
                 }
-            } catch (DOMException $e) {
+            } catch (Exception $e) {
                 // 严格模式下抛出异常
                 if ($this->config['strictMode']) {
                     throw new InvalidArgumentException('添加数组内容失败: '.$e->getMessage());
@@ -416,7 +417,7 @@ class Array2XML
                     $element->setAttribute($normalizedAttrName, $this->toString($value));
 
                     return true;
-                } catch (DOMException $e) {
+                } catch (Exception $e) {
                     if ($this->config['strictMode']) {
                         throw new InvalidArgumentException("属性设置失败: {$normalizedAttrName}");
                     }
@@ -436,7 +437,7 @@ class Array2XML
                     if ($commentText !== '') {
                         try {
                             $element->appendChild($this->document->createComment($commentText));
-                        } catch (DOMException $e) {
+                        } catch (Exception $e) {
                             if ($this->config['strictMode']) {
                                 throw new InvalidArgumentException('注释添加失败');
                             }
@@ -453,7 +454,7 @@ class Array2XML
                         if ($target !== '') {
                             try {
                                 $element->appendChild($this->document->createProcessingInstruction($target, $data));
-                            } catch (DOMException $e) {
+                            } catch (Exception $e) {
                                 if ($this->config['strictMode']) {
                                     throw new InvalidArgumentException('处理指令添加失败');
                                 }
@@ -468,7 +469,7 @@ class Array2XML
                     if ($cdataText !== '') {
                         try {
                             $element->appendChild($this->document->createCDATASection($cdataText));
-                        } catch (DOMException $e) {
+                        } catch (Exception $e) {
                             if ($this->config['strictMode']) {
                                 throw new InvalidArgumentException('CDATA添加失败');
                             }

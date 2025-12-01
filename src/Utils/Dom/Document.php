@@ -47,7 +47,7 @@ class Document
      * @var array
      */
     protected $namespaces = [
-        'php' => 'http://php.net/xpath',
+        'php' => 'https://php.net/xpath',
     ];
 
     /**
@@ -260,11 +260,10 @@ class Document
     /**
      * Load HTML from a string.
      *
-     * @param  string  $html  The HTML string
-     * @param  int|null  $options  Additional parameters
-     * @return Document
+     * @param string $html The HTML string
+     * @param int|null $options Additional parameters
+     * @return void
      *
-     * @throws InvalidArgumentException if parameter 1 is not a string
      */
     public function loadHtml(string $html, ?int $options = null): void
     {

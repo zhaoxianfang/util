@@ -9,6 +9,7 @@ use Exception;
 use Generator;
 use IteratorAggregate;
 use JsonSerializable;
+use RecursiveArrayIterator;
 use SimpleXMLElement;
 use Traversable;
 use RuntimeException;
@@ -491,9 +492,9 @@ class DataArray implements
      *
      * @param string $name 方法名
      * @param array $arguments 参数
-     * @return mixed
+     * @return static
      */
-    public function __call(string $name, array $arguments): mixed
+    public function __call(string $name, array $arguments): static
     {
         // 支持动态的 where{Field} 方法
         if (str_starts_with($name, 'where')) {
@@ -2896,7 +2897,7 @@ class DataArray implements
     public function recursive(): Generator
     {
         $iterator = new RecursiveIteratorIterator(
-            new \RecursiveArrayIterator($this->data),
+            new RecursiveArrayIterator($this->data),
             RecursiveIteratorIterator::SELF_FIRST
         );
 
@@ -3049,21 +3050,21 @@ class DataArray implements
     /**
      * 创建递归迭代器
      *
-     * @return \RecursiveArrayIterator
+     * @return RecursiveArrayIterator
      */
-    public function getRecursiveIterator(): \RecursiveArrayIterator
+    public function getRecursiveIterator(): RecursiveArrayIterator
     {
-        return new \RecursiveArrayIterator($this->data);
+        return new RecursiveArrayIterator($this->data);
     }
 
     /**
      * 创建可搜索的迭代器
      *
-     * @return \ArrayIterator
+     * @return ArrayIterator
      */
-    public function getSeekableIterator(): \ArrayIterator
+    public function getSeekableIterator(): ArrayIterator
     {
-        return new \ArrayIterator($this->data);
+        return new ArrayIterator($this->data);
     }
 
     /**

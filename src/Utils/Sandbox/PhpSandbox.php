@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace zxf\Utils\Sandbox;
 
+use ErrorException;
+use LogicException;
+use RuntimeException;
+use Throwable;
+
 /**
  * 企业级PHP沙箱运行环境
  *
@@ -280,7 +285,7 @@ final class PhpSandbox
     {
         if (!is_dir($this->tempDir)) {
             if (!@mkdir($this->tempDir, 0700, true) && !is_dir($this->tempDir)) {
-                throw new \RuntimeException("无法创建临时目录: {$this->tempDir}");
+                throw new RuntimeException("无法创建临时目录: {$this->tempDir}");
             }
         }
 
@@ -314,17 +319,17 @@ final class PhpSandbox
         $requiredExtensions = ['tokenizer'];
         foreach ($requiredExtensions as $ext) {
             if (!extension_loaded($ext)) {
-                throw new \RuntimeException("需要 {$ext} 扩展");
+                throw new RuntimeException("需要 {$ext} 扩展");
             }
         }
 
         if (!is_writable($this->tempDir)) {
-            throw new \RuntimeException("临时目录不可写: {$this->tempDir}");
+            throw new RuntimeException("临时目录不可写: {$this->tempDir}");
         }
 
         $systemMemoryLimit = $this->parseMemorySize(ini_get('memory_limit'));
         if ($systemMemoryLimit > 0 && $this->memoryLimit * 1024 * 1024 > $systemMemoryLimit) {
-            throw new \RuntimeException("请求的内存限制超过系统限制");
+            throw new RuntimeException("请求的内存限制超过系统限制");
         }
     }
 
@@ -368,7 +373,7 @@ final class PhpSandbox
 
         // 单个执行
         if ($this->isExecuting) {
-            throw new \LogicException("沙箱正在执行中，不能同时执行多个代码片段");
+            throw new LogicException("沙箱正在执行中，不能同时执行多个代码片段");
         }
 
         $this->isExecuting = true;
@@ -394,7 +399,7 @@ final class PhpSandbox
                 ->setOutput($output)
                 ->setIdentifier($identifier);
 
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $result->setError($this->formatException($e))
                 ->setErrorType(get_class($e))
                 ->setIdentifier($identifier);
@@ -422,7 +427,7 @@ final class PhpSandbox
         foreach ($codes as $key => $code) {
             try {
                 $results[$key] = $this->execute($code, is_string($key) ? $key : null);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $errorResult = new PhpSandboxResult();
                 $errorResult->setError($e->getMessage())
                     ->setErrorType(get_class($e))
@@ -627,7 +632,7 @@ final class PhpSandbox
         $wrappedCode = $this->wrapCode($code);
 
         if (file_put_contents($filename, $wrappedCode, LOCK_EX) === false) {
-            throw new \RuntimeException("无法创建临时文件: {$filename}");
+            throw new RuntimeException("无法创建临时文件: {$filename}");
         }
 
         @chmod($filename, 0600);
@@ -732,7 +737,7 @@ final class PhpSandbox
 
         try {
             include $this->currentTempFile;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             ob_end_clean();
             throw $e;
         }
@@ -750,7 +755,7 @@ final class PhpSandbox
         }
 
         if (error_reporting() & $level) {
-            throw new \ErrorException($message, 0, $level, $file, $line);
+            throw new ErrorException($message, 0, $level, $file, $line);
         }
 
         return true;
@@ -764,7 +769,7 @@ final class PhpSandbox
         $error = error_get_last();
 
         if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
-            throw new \ErrorException(
+            throw new ErrorException(
                 $error['message'],
                 0,
                 $error['type'],
@@ -835,7 +840,7 @@ final class PhpSandbox
     /**
      * 格式化异常信息
      */
-    private function formatException(\Throwable $e): string
+    private function formatException(Throwable $e): string
     {
         $type = get_class($e);
         $message = $e->getMessage();

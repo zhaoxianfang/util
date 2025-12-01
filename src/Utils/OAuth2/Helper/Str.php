@@ -3,12 +3,12 @@ namespace zxf\Utils\OAuth2\Helper;
 
 class Str
 {
-    public static function uFirst($str)
+    public static function uFirst($str): string
     {
         return ucfirst(strtolower($str));
     }
 
-    public static function buildParams($params, $urlencode = false, $except = ['sign'])
+    public static function buildParams($params, $urlencode = false, $except = ['sign']): string
     {
         $param_str = '';
         foreach ($params as $k => $v) {
@@ -22,7 +22,7 @@ class Str
         return rtrim($param_str, '&');
     }
 
-    public static function random($length = 16)
+    public static function random($length = 16): string
     {
         $str_pol = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz";
         return substr(str_shuffle($str_pol), 0, $length);

@@ -7,27 +7,28 @@ namespace zxf\Utils\OAuth2;
 
 use zxf\Utils\OAuth2\Connector\GatewayInterface;
 use zxf\Utils\OAuth2\Exception\OAuthException;
+use zxf\Utils\OAuth2\Gateways;
 use zxf\Utils\OAuth2\Helper\Str;
 /**
- * @method static \zxf\Utils\OAuth2\Gateways\Alipay Alipay(array $config) 阿里云
- * @method static \zxf\Utils\OAuth2\Gateways\Wechat wechat(array $config) 微信
- * @method static \zxf\Utils\OAuth2\Gateways\Wechat weixin(array $config) 微信
- * @method static \zxf\Utils\OAuth2\Gateways\Qq Qq(array $config) QQ
- * @method static \zxf\Utils\OAuth2\Gateways\Facebook Facebook(array $config) Facebook
- * @method static \zxf\Utils\OAuth2\Gateways\Github Github(array $config) Github
- * @method static \zxf\Utils\OAuth2\Gateways\Google Google(array $config) Google
- * @method static \zxf\Utils\OAuth2\Gateways\Line Line(array $config) Line
- * @method static \zxf\Utils\OAuth2\Gateways\Sina Sina(array $config) Sina
- * @method static \zxf\Utils\OAuth2\Gateways\Twitter Twitter(array $config) Twitter
- * @method static \zxf\Utils\OAuth2\Gateways\Douyin Douyin(array $config) 抖音
- * @method static \zxf\Utils\OAuth2\Gateways\Baidu Baidu(array $config) 百度
- * @method static \zxf\Utils\OAuth2\Gateways\Coding Coding(array $config) Coding
- * @method static \zxf\Utils\OAuth2\Gateways\Csdn Csdn(array $config) CSDN
- * @method static \zxf\Utils\OAuth2\Gateways\Gitee Gitee(array $config) Gitee
- * @method static \zxf\Utils\OAuth2\Gateways\Gitlab GitLab(array $config) GitLab
- * @method static \zxf\Utils\OAuth2\Gateways\Oschina OSChina(array $config) OSChina
- * @method static \zxf\Utils\OAuth2\Gateways\Wecom Wecom(array $config) 企业微信
- * @method static \zxf\Utils\OAuth2\Gateways\Kuaishou Kuaishou(array $config) 快手
+ * @method static Gateways\Alipay Alipay(array $config) 阿里云
+ * @method static Gateways\Wechat wechat(array $config) 微信
+ * @method static Gateways\Wechat weixin(array $config) 微信
+ * @method static Gateways\Qq Qq(array $config) QQ
+ * @method static Gateways\Facebook Facebook(array $config) Facebook
+ * @method static Gateways\Github Github(array $config) Github
+ * @method static Gateways\Google Google(array $config) Google
+ * @method static Gateways\Line Line(array $config) Line
+ * @method static Gateways\Sina Sina(array $config) Sina
+ * @method static Gateways\Twitter Twitter(array $config) Twitter
+ * @method static Gateways\Douyin Douyin(array $config) 抖音
+ * @method static Gateways\Baidu Baidu(array $config) 百度
+ * @method static Gateways\Coding Coding(array $config) Coding
+ * @method static Gateways\Csdn Csdn(array $config) CSDN
+ * @method static Gateways\Gitee Gitee(array $config) Gitee
+ * @method static Gateways\Gitlab GitLab(array $config) GitLab
+ * @method static Gateways\Oschina OSChina(array $config) OSChina
+ * @method static Gateways\Wecom Wecom(array $config) 企业微信
+ * @method static Gateways\Kuaishou Kuaishou(array $config) 快手
  */
 abstract class OAuth
 {

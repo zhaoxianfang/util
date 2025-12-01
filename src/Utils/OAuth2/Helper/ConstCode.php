@@ -4,9 +4,8 @@
  */
 namespace zxf\Utils\OAuth2\Helper;
 
-use zxf\Utils\tools\Tool;
-
-class ConstCode{
+class ConstCode
+{
 
     /** 公共状态 */
     const STATUS_DELETE = 0;//删除
@@ -58,10 +57,10 @@ class ConstCode{
      * Description:  getTypeConst
      *
      * @param int $channel 渠道：登录方式
-     * @param bool $type 类型：app applets
+     * @param bool|string $type 类型：app applets
      * @return int
      */
-    static public function getTypeConst($channel,$type="")
+    static public function getTypeConst(int $channel, bool|string $type=""): int
     {
         switch ($channel){
             case self::TYPE_QQ:
@@ -76,7 +75,7 @@ class ConstCode{
                     $typeConst = self::TYPE_WECHAT_APP;//微信App
                 }else if($type == 'applets'){
                     $typeConst =  self::TYPE_WECHAT_APPLETS;//微信小程序
-                }else if(Tool::isWeiXin()){
+                }else if(is_wechat_browser()){
                     $typeConst =  self::TYPE_WECHAT_MOBILE;//微信mobile
                 }else{
                     $typeConst = $channel;

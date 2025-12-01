@@ -2,6 +2,8 @@
 
 namespace zxf\Utils\Http;
 
+use zxf\Utils\Xml\XML2Array;
+
 /**
  * HTTP 请求类
  */
@@ -181,7 +183,7 @@ class Request
             $data = is_array($rawInput) ? $rawInput : json_decode($rawInput, true);
         } elseif (is_xml($rawInput)) {
             $type = 'xml';
-            $data = \zxf\Xml\XML2Array::toArray($rawInput);
+            $data = XML2Array::toArray($rawInput);
         }
 
         // 处理 get 数据

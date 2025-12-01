@@ -5,6 +5,7 @@ namespace zxf\Utils\Xml;
 use DOMDocument;
 use DOMNode;
 use DOMProcessingInstruction;
+use Generator;
 use InvalidArgumentException;
 use RuntimeException;
 use XMLReader;
@@ -123,7 +124,7 @@ final class XML2Array
      *          // 直接获取子节点，不包含根节点
      *      }
      */
-    public function parseStream(string $filePath): \Generator
+    public function parseStream(string $filePath): Generator
     {
         $this->resetStats();
         $this->checkFileAccess($filePath);
@@ -392,17 +393,11 @@ final class XML2Array
      */
     private function normalizeNodeName(string $name): string
     {
-        switch ($this->options['namespaceHandling']) {
-            case 'none':
-                return preg_replace('/^.*:/', '', $name);
-
-            case 'remove':
-                return preg_replace('/^[^:]+:/', '', $name);
-
-            case 'preserve':
-            default:
-                return $name;
-        }
+        return match ($this->options['namespaceHandling']) {
+            'none' => preg_replace('/^.*:/', '', $name),
+            'remove' => preg_replace('/^[^:]+:/', '', $name),
+            default => $name,
+        };
     }
 
     /**

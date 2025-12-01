@@ -117,7 +117,7 @@ class Xiaomi extends Gateway
     /**
      * 获取性别
      */
-    private function getGender($gender)
+    public function getGender($gender)
     {
         $map = [
             '1' => ConstCode::GENDER_MAN,

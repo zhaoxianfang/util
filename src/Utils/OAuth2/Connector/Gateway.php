@@ -271,6 +271,7 @@ abstract class Gateway implements GatewayInterface
      * 格式化性别参数
      * M代表男性,F代表女性
      * @param $gender
+     * @return int
      */
     public function getGender($gender){
         return strtolower(substr($gender , 0 , 1)) == 'm' ? ConstCode::GENDER_MAN : ConstCode::GENDER_WOMEN;

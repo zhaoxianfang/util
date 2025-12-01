@@ -280,7 +280,7 @@ class TextToImg
     {
         $this->drawText($this->text, $this->angle, $this->size);
         if (! empty($fileName)) {
-            create_dir(dirname(realpath($fileName)));
+            create_dir_or_filepath(dirname(realpath($fileName)));
             // 保存图片到文件
             imagepng($this->image, $fileName);
         } else {

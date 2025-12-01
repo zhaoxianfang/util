@@ -14,6 +14,7 @@ namespace zxf\Utils\Http;
 
 use Closure;
 use CURLFile;
+use CurlHandle;
 use Exception;
 use zxf\Utils\Data\Collection;
 
@@ -368,7 +369,7 @@ class Curl
     /**
      * 复制句柄
      *
-     * @return \CurlHandle|false
+     * @return CurlHandle|false
      *
      * @throws Exception
      */

@@ -4,6 +4,7 @@
  * api接口文档
 */
 namespace zxf\Utils\OAuth2\Gateways;
+use Exception;
 use zxf\Utils\OAuth2\Connector\Gateway;
 use zxf\Utils\OAuth2\Exception\OAuthException;
 use zxf\Utils\OAuth2\Helper\ConstCode;
@@ -180,7 +181,7 @@ class Baidu extends Gateway
             $data = $this->get($this->UserInfoURL, [], $headers);
             $data = json_decode($data, true);
             return isset($data['uid']);
-        } catch (OAuthException $e) {
+        } catch (Exception $e) {
             return false;
         }
     }

@@ -110,7 +110,7 @@ final class IDCardGenerator
      *     province?: string|null,
      *     birthday?: string|DateTimeInterface|null,
      *     gender?: 'm'|'male'|'f'|'female'|null,
-     *     length?: 15|18
+     *     length?: '15|18'
      * } $options 生成选项
      * @return string 身份证号码
      *

@@ -978,7 +978,7 @@ class ImagickTool
             // 创建背景颜色像素（使用修复后的方法）
             $pixel = $this->createImagickPixel($backgroundColor);
             // 设置像素插值方法
-            $this->imagick->setInterpolateMethod($interpolate);
+            $this->imagick->setImageInterpolateMethod($interpolate);
             // 执行旋转操作
             $this->imagick->rotateImage($pixel, $angle);
 
@@ -2242,32 +2242,21 @@ class ImagickTool
         int $padding,
         float $angle
     ): array {
-        $x = $padding;
         $y = $padding;
 
         // 水平对齐计算
-        switch ($textAlign) {
-            case self::TEXT_ALIGN_CENTER:
-                $x = ($canvasWidth - $textWidth) / 2;
-                break;
-            case self::TEXT_ALIGN_RIGHT:
-                $x = $canvasWidth - $textWidth - $padding;
-                break;
-            default: // left
-                $x = $padding;
-        }
+        $x = match ($textAlign) {
+            self::TEXT_ALIGN_CENTER => ($canvasWidth - $textWidth) / 2,
+            self::TEXT_ALIGN_RIGHT => $canvasWidth - $textWidth - $padding,
+            default => $padding,
+        };
 
         // 垂直对齐计算
-        switch ($textValign) {
-            case self::TEXT_VALIGN_MIDDLE:
-                $y = ($canvasHeight - $textHeight) / 2;
-                break;
-            case self::TEXT_VALIGN_BOTTOM:
-                $y = $canvasHeight - $textHeight - $padding;
-                break;
-            default: // top
-                $y = $padding;
-        }
+        $y = match ($textValign) {
+            self::TEXT_VALIGN_MIDDLE => ($canvasHeight - $textHeight) / 2,
+            self::TEXT_VALIGN_BOTTOM => $canvasHeight - $textHeight - $padding,
+            default => $padding,
+        };
 
         // 对于特殊角度区间，进行额外调整
         if ($this->isSpecialAngle($angle)) {
@@ -2494,14 +2483,11 @@ class ImagickTool
      */
     private function calculateAdvancedLineXPosition(array $layout, float $lineWidth, int $lineIndex): float
     {
-        switch ($layout['textAlign']) {
-            case self::TEXT_ALIGN_CENTER:
-                return $layout['startX'] + ($layout['totalWidth'] - $lineWidth) / 2;
-            case self::TEXT_ALIGN_RIGHT:
-                return $layout['startX'] + $layout['totalWidth'] - $lineWidth;
-            default: // left
-                return $layout['startX'];
-        }
+        return match ($layout['textAlign']) {
+            self::TEXT_ALIGN_CENTER => $layout['startX'] + ($layout['totalWidth'] - $lineWidth) / 2,
+            self::TEXT_ALIGN_RIGHT => $layout['startX'] + $layout['totalWidth'] - $lineWidth,
+            default => $layout['startX'],
+        };
     }
 
     /**
@@ -3303,11 +3289,11 @@ class ImagickTool
             // 预处理颜色字符串
             $color = $this->normalizeColor($color);
             return new ImagickPixel($color);
-        } catch (ImagickException $e) {
+        } catch (Exception $e) {
             // 如果颜色格式无效，使用默认颜色
             try {
                 return new ImagickPixel('#FFFFFF'); // 默认白色
-            } catch (ImagickException $e) {
+            } catch (Exception $e) {
                 throw new ImagickException("无法创建 ImagickPixel 对象，颜色格式无效: {$color}", $e->getCode(), $e);
             }
         }
@@ -3970,7 +3956,7 @@ class ImagickTool
                 if ($resource instanceof Imagick) {
                     $resource->clear();
                 }
-            } catch (ImagickException $e) {
+            } catch (Exception $e) {
                 // 忽略清理异常
             }
         }
@@ -4157,7 +4143,7 @@ class ImagickTool
         if (isset($this->imagick)) {
             try {
                 $this->imagick->clear();
-            } catch (ImagickException $e) {
+            } catch (Exception $e) {
                 // 忽略析构过程中的异常
             }
         }

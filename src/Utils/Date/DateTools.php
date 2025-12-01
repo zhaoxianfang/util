@@ -31,104 +31,119 @@ class DateTools
     /**
      * @desc 友好时间显示
      *
-     * @param  string  $time  时间戳 或者 时间字符串
-     * @param  string  $lang  $lang 语言, cn 中文, en 英文
+     * @param string|int $time 时间戳或时间字符串
+     * @param string $lang 语言, cn 中文, en 英文
      * @return string
      */
-    public static function get_friend_date(string $time, string $lang = 'cn')
+    public static function get_friend_date($time, string $lang = 'cn'): string
     {
         if (empty($time)) {
             return '';
         }
-        $time = is_numeric($time) ? $time : strtotime($time);
-        $friendDate = '';
-        $d = time() - intval($time);
-        $ld = $time - mktime(0, 0, 0, 0, 0, date('Y')); // 得出年
-        $md = $time - mktime(0, 0, 0, date('m'), 0, date('Y')); // 得出月
-        $byd = $time - mktime(0, 0, 0, date('m'), date('d') - 2, date('Y')); // 前天
-        $yd = $time - mktime(0, 0, 0, date('m'), date('d') - 1, date('Y')); // 昨天
-        $dd = $time - mktime(0, 0, 0, date('m'), date('d'), date('Y')); // 今天
-        $td = $time - mktime(0, 0, 0, date('m'), date('d') + 1, date('Y')); // 明天
-        $atd = $time - mktime(0, 0, 0, date('m'), date('d') + 2, date('Y')); // 后天
-        if ($lang == 'cn') {
-            if ($d <= 10) {
-                $friendDate = '刚刚';
-            } else {
-                switch ($d) {
-                    case $d < $td:
-                        $friendDate = '后天'.date('H:i', $time);
-                        break;
-                    case $d < 0:
-                        $friendDate = '明天'.date('H:i', $time);
-                        break;
-                    case $d < 60:
-                        $friendDate = $d.'秒前';
-                        break;
-                    case $d < 3600:
-                        $friendDate = floor($d / 60).'分钟前';
-                        break;
-                    case $d < $dd:
-                        $friendDate = floor($d / 3600).'小时前';
-                        break;
-                    case $d < $yd:
-                        $friendDate = '昨天'.date('H:i', $time);
-                        break;
-                    case $d < $byd:
-                        $friendDate = '前天'.date('H:i', $time);
-                        break;
-                    case $d < $md:
-                        $friendDate = date('m月d日 H:i', $time);
-                        break;
-                    case $d < $ld:
-                        $friendDate = date('m月d日', $time);
-                        break;
-                    case $d < $atd:
-                    default:
-                        $friendDate = date('Y年m月d日', $time);
-                        break;
-                }
-            }
-        } else {
-            if ($d <= 10) {
-                $friendDate = 'just';
-            } else {
-                switch ($d) {
-                    case $d < $td:
-                        $friendDate = 'the day after tomorrow'.date('H:i', $time);
-                        break;
-                    case $d < 0:
-                        $friendDate = 'tomorrow'.date('H:i', $time);
-                        break;
-                    case $d < 60:
-                        $friendDate = $d.'seconds ago';
-                        break;
-                    case $d < 3600:
-                        $friendDate = floor($d / 60).'minutes ago';
-                        break;
-                    case $d < $dd:
-                        $friendDate = floor($d / 3600).'hour ago';
-                        break;
-                    case $d < $yd:
-                        $friendDate = 'yesterday'.date('H:i', $time);
-                        break;
-                    case $d < $byd:
-                        $friendDate = 'the day before yesterday'.date('H:i', $time);
-                        break;
-                    case $d < $md:
-                        $friendDate = date('m-d H:i', $time);
-                        break;
-                    case $d < $ld:
-                        $friendDate = date('m-d', $time);
-                        break;
-                    case $d < $atd:
-                    default:
-                        $friendDate = date('Y-m-d', $time);
-                        break;
-                }
+
+        // 转换为时间戳
+        $timestamp = is_numeric($time) ? (int)$time : strtotime($time);
+        if ($timestamp === false) {
+            return '';
+        }
+
+        $currentTime = time();
+        $diff = $currentTime - $timestamp;
+
+        // 语言配置
+        $langConfig = [
+            'cn' => [
+                'just_now' => '刚刚',
+                'seconds_ago' => '%d秒前',
+                'minutes_ago' => '%d分钟前',
+                'hours_ago' => '%d小时前',
+                'yesterday' => '昨天%s',
+                'day_before_yesterday' => '前天%s',
+                'tomorrow' => '明天%s',
+                'day_after_tomorrow' => '后天%s',
+                'month_day' => 'm月d日',
+                'month_day_time' => 'm月d日 H:i',
+                'year_month_day' => 'Y年m月d日',
+            ],
+            'en' => [
+                'just_now' => 'just now',
+                'seconds_ago' => '%d seconds ago',
+                'minutes_ago' => '%d minutes ago',
+                'hours_ago' => '%d hours ago',
+                'yesterday' => 'yesterday%s',
+                'day_before_yesterday' => 'the day before yesterday%s',
+                'tomorrow' => 'tomorrow%s',
+                'day_after_tomorrow' => 'the day after tomorrow%s',
+                'month_day' => 'm-d',
+                'month_day_time' => 'm-d H:i',
+                'year_month_day' => 'Y-m-d',
+            ]
+        ];
+
+        $config = $langConfig[$lang] ?? $langConfig['cn'];
+        $timeFormat = 'H:i';
+
+        // 处理未来时间
+        if ($diff < 0) {
+            $daysDiff = floor($diff / (60 * 60 * 24));
+
+            switch ($daysDiff) {
+                case -2:
+                    return sprintf($config['day_after_tomorrow'], date($timeFormat, $timestamp));
+                case -1:
+                    return sprintf($config['tomorrow'], date($timeFormat, $timestamp));
+                default:
+                    return date($config['year_month_day'], $timestamp);
             }
         }
 
-        return $friendDate;
+        // 处理过去时间 - 刚刚
+        if ($diff <= 10) {
+            return $config['just_now'];
+        }
+
+        // 秒
+        if ($diff < 60) {
+            return sprintf($config['seconds_ago'], $diff);
+        }
+
+        // 分钟
+        if ($diff < 3600) {
+            $minutes = floor($diff / 60);
+            return sprintf($config['minutes_ago'], $minutes);
+        }
+
+        $todayStart = strtotime('today');
+        $yesterdayStart = strtotime('yesterday');
+        $dayBeforeYesterdayStart = strtotime('-2 days');
+
+        // 今天内的小时
+        if ($timestamp >= $todayStart) {
+            $hours = floor($diff / 3600);
+            return sprintf($config['hours_ago'], $hours);
+        }
+
+        // 昨天
+        if ($timestamp >= $yesterdayStart) {
+            return sprintf($config['yesterday'], date($timeFormat, $timestamp));
+        }
+
+        // 前天
+        if ($timestamp >= $dayBeforeYesterdayStart) {
+            return sprintf($config['day_before_yesterday'], date($timeFormat, $timestamp));
+        }
+
+        // 今年内的日期
+        if (date('Y', $timestamp) === date('Y')) {
+            // 一个月内显示详细时间，否则只显示日期
+            $showTime = (time() - $timestamp) < 30 * 24 * 60 * 60;
+            return $showTime ?
+                date($config['month_day_time'], $timestamp) :
+                date($config['month_day'], $timestamp);
+        }
+
+        // 往年日期
+        return date($config['year_month_day'], $timestamp);
     }
 
     /**

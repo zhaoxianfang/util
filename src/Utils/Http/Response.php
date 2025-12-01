@@ -3,6 +3,7 @@
 namespace zxf\Utils\Http;
 
 use Exception;
+use zxf\Utils\Xml\Array2XML;
 
 /**
  * HTTP 响应
@@ -131,7 +132,7 @@ class Response
             readfile($file);
             exit;
         } else {
-            throw new \Exception('文件不存在');
+            throw new Exception('文件不存在');
         }
     }
 
@@ -185,7 +186,7 @@ class Response
     // 将数据对象转换为 SimpleXMLElement 对象
     private function arrayToXml($array, array $config = [])
     {
-        return \zxf\Xml\Array2XML::toXML($array, $config);
+        return Array2XML::toXML($array, $config);
     }
 
     //  发送空白响应（空内容响应）
@@ -295,7 +296,7 @@ class Response
 
     //  发送异常响应
     // $response->sendException(new Exception('Something went wrong!'));
-    public function sendException(\Exception $exception)
+    public function sendException(Exception $exception)
     {
         $this->setStatusCode($exception->getCode());
         $this->setBody($exception->getMessage());

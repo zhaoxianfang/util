@@ -170,6 +170,7 @@ class Qq extends Gateway
      * 格式化性别参数
      * M代表男性,F代表女性
      * @param $gender
+     * @return int
      */
     public function getGender($gender){
         return $gender == '男' ? ConstCode::GENDER_MAN : ConstCode::GENDER_WOMEN;

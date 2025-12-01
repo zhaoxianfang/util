@@ -416,7 +416,7 @@ class SiteMapGenerator
     /**
      * 生成站点地图并返回多种格式的结果
      */
-    public function generate(string $outputType = self::OUTPUT_FILE): mixed
+    public function generate(string $outputType = self::OUTPUT_FILE): string|array|bool
     {
         $startTime = microtime(true);
 

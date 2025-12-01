@@ -2,6 +2,8 @@
 
 namespace zxf\Utils\PHPMailer;
 
+use Error;
+
 /**
  * 发送邮件类
  *      支持故障转移(default 参数中传入 "fail_over" 标识)
@@ -331,7 +333,7 @@ class Mail
             return PHPMailer::$method(...$arguments);
         } else {
             // 处理不存在的方法调用
-            throw new \Error("Static method $method does not exist");
+            throw new Error("Static method $method does not exist");
         }
     }
 
